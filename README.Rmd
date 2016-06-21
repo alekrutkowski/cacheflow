@@ -26,7 +26,7 @@ plot <- function(x)
     {i <<- i + 1} %>%
     cat(file=paste0('test',i,'.svg')) %>%
     {cat(paste0('\n![](https://raw.githubusercontent.com/',
-                'alekrutkowski/cacheflow/master/test',i,'.svg?raw=true)\n'))}
+                'alekrutkowski/cacheflow/master/test',i,'.svg)\n'))}
 i <- 0
 cacheflow::removeCache(y='y')
 ```
