@@ -1,0 +1,8 @@
+.Rproj.user
+*.txt
+*.html
+*.zip
+.Rhistory
+README_cache
+.cache.db
+.cache.gv
