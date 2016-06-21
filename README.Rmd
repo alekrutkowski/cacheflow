@@ -31,6 +31,13 @@ i <- 0
 cacheflow::removeCache(y='y')
 ```
 
+## Installation
+
+```{r, eval=FALSE}
+devtools::install_github('alekrutkowski/cacheflow')
+```
+
+
 ## Motivation
 
 Often an R script is re-run with only some of the parts modified.
