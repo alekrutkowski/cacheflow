@@ -126,7 +126,9 @@ saveRDS_ <- function(object, file, ...) { # pipe friendly
 }
 
 shorten <- function(str)
-    substr(str, 1, 30)
+    ifelse(nchar(str)>30,
+           paste0(substr(str, 1, 30),'...'),
+           str)
 
 
 
