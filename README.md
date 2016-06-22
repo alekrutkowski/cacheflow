@@ -101,20 +101,20 @@ system.time(Res1 <- 1:100 %>%
                 extractVal)
 ```
 
-    ## 2016-06-22 22:04:27 [f1] (re-)evaluating...
+    ## 2016-06-22 22:17:36 [f1] (re-)evaluating...
 
-    ## 2016-06-22 22:04:28 [f1] saving to cache...
+    ## 2016-06-22 22:17:37 [f1] saving to cache...
 
-    ## 2016-06-22 22:04:28 [f2] (re-)evaluating...
+    ## 2016-06-22 22:17:37 [f2] (re-)evaluating...
 
-    ## 2016-06-22 22:04:29 [f2] saving to cache...
+    ## 2016-06-22 22:17:38 [f2] saving to cache...
 
-    ## 2016-06-22 22:04:29 [f3] (re-)evaluating...
+    ## 2016-06-22 22:17:38 [f3] (re-)evaluating...
 
-    ## 2016-06-22 22:04:30 [f3] saving to cache...
+    ## 2016-06-22 22:17:39 [f3] saving to cache...
 
     ##    user  system elapsed 
-    ##   0.018   0.000   3.022
+    ##   0.014   0.006   3.024
 
 ``` r
 system.time(Res2 <- 1:100 %>%
@@ -124,14 +124,14 @@ system.time(Res2 <- 1:100 %>%
                 extractVal)
 ```
 
-    ## 2016-06-22 22:04:30 [f1] no re-evaluation needed.
+    ## 2016-06-22 22:17:39 [f1] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:30 [f2] no re-evaluation needed.
+    ## 2016-06-22 22:17:39 [f2] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:30 [f3] no re-evaluation needed.
+    ## 2016-06-22 22:17:39 [f3] no re-evaluation needed.
 
     ##    user  system elapsed 
-    ##   0.015   0.000   0.015
+    ##   0.008   0.004   0.012
 
 ``` r
 # The same workflow but without the pipe operator and not timed
@@ -143,11 +143,11 @@ system.time(Res2 <- 1:100 %>%
 }
 ```
 
-    ## 2016-06-22 22:04:30 [f1] no re-evaluation needed.
+    ## 2016-06-22 22:17:39 [f1] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:30 [f2] no re-evaluation needed.
+    ## 2016-06-22 22:17:39 [f2] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:30 [f3] no re-evaluation needed.
+    ## 2016-06-22 22:17:39 [f3] no re-evaluation needed.
 
 ``` r
 Res1 == Res2
@@ -172,16 +172,16 @@ system.time(1:100 %>%
                 extractVal)
 ```
 
-    ## 2016-06-22 22:04:30 [f1] no re-evaluation needed.
+    ## 2016-06-22 22:17:39 [f1] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:30 [f2] no re-evaluation needed.
+    ## 2016-06-22 22:17:39 [f2] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:30 [f3] (re-)evaluating...
+    ## 2016-06-22 22:17:39 [f3] (re-)evaluating...
 
-    ## 2016-06-22 22:04:31 [f3] saving to cache...
+    ## 2016-06-22 22:17:40 [f3] saving to cache...
 
     ##    user  system elapsed 
-    ##   0.006   0.004   1.012
+    ##   0.009   0.000   1.012
 
 ``` r
 # Of course, a modification of a function also triggers re-evaluation
@@ -197,18 +197,18 @@ system.time(1:100 %>%
                 extractVal)
 ```
 
-    ## 2016-06-22 22:04:31 [f1] no re-evaluation needed.
+    ## 2016-06-22 22:17:40 [f1] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:31 [f2] (re-)evaluating...
+    ## 2016-06-22 22:17:40 [f2] (re-)evaluating...
 
-    ## 2016-06-22 22:04:32 [f2] saving to cache...
+    ## 2016-06-22 22:17:41 [f2] saving to cache...
 
-    ## 2016-06-22 22:04:32 [f3] (re-)evaluating...
+    ## 2016-06-22 22:17:41 [f3] (re-)evaluating...
 
-    ## 2016-06-22 22:04:33 [f3] saving to cache...
+    ## 2016-06-22 22:17:42 [f3] saving to cache...
 
     ##    user  system elapsed 
-    ##   0.011   0.003   2.019
+    ##   0.024   0.000   2.028
 
 ``` r
 # Paths to files need to be wrapped in File()
@@ -228,12 +228,12 @@ system.time(ResA <-
                 extractVal)
 ```
 
-    ## 2016-06-22 22:04:33 [f4] (re-)evaluating...
+    ## 2016-06-22 22:17:42 [f4] (re-)evaluating...
 
-    ## 2016-06-22 22:04:34 [f4] saving to cache...
+    ## 2016-06-22 22:17:43 [f4] saving to cache...
 
     ##    user  system elapsed 
-    ##   0.011   0.000   1.012
+    ##   0.007   0.000   1.008
 
 ``` r
 tmpf2 <- tempfile()
@@ -248,10 +248,10 @@ system.time(ResB <-
                 extractVal)
 ```
 
-    ## 2016-06-22 22:04:34 [f4] no re-evaluation needed.
+    ## 2016-06-22 22:17:43 [f4] no re-evaluation needed.
 
     ##    user  system elapsed 
-    ##   0.004   0.000   0.004
+    ##   0.004   0.000   0.003
 
 ``` r
 identical(ResA, ResB)
@@ -267,12 +267,12 @@ system.time(cachedCall(f4, File(tmpf)) %>%
                 extractVal)
 ```
 
-    ## 2016-06-22 22:04:34 [f4] (re-)evaluating...
+    ## 2016-06-22 22:17:43 [f4] (re-)evaluating...
 
-    ## 2016-06-22 22:04:35 [f4] saving to cache...
+    ## 2016-06-22 22:17:44 [f4] saving to cache...
 
     ##    user  system elapsed 
-    ##   0.005   0.000   1.006
+    ##   0.005   0.000   1.008
 
 ``` r
 # Drawing diagrams
@@ -286,21 +286,21 @@ withGraph(1:100 %>%
     plot
 ```
 
-    ## 2016-06-22 22:04:35 [f1] (re-)evaluating...
+    ## 2016-06-22 22:17:45 [f1] (re-)evaluating...
 
-    ## 2016-06-22 22:04:35 [f1] saving to cache...
+    ## 2016-06-22 22:17:45 [f1] saving to cache...
 
-    ## 2016-06-22 22:04:35 [f2] (re-)evaluating...
+    ## 2016-06-22 22:17:45 [f2] (re-)evaluating...
 
-    ## 2016-06-22 22:04:36 [f2] saving to cache...
+    ## 2016-06-22 22:17:46 [f2] saving to cache...
 
-    ## 2016-06-22 22:04:36 [f3] (re-)evaluating...
+    ## 2016-06-22 22:17:46 [f3] (re-)evaluating...
 
-    ## 2016-06-22 22:04:37 [f3] saving to cache...
+    ## 2016-06-22 22:17:47 [f3] saving to cache...
 
 pre-main prep time: 1 ms
 
-[](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test1.svg)
+![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test1.svg)
 
 ``` r
 # Now the same but with named values and no pipes
@@ -312,11 +312,11 @@ ResY <- withGraph({
 })
 ```
 
-    ## 2016-06-22 22:04:40 [f1] no re-evaluation needed.
+    ## 2016-06-22 22:17:51 [f1] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:40 [f2] no re-evaluation needed.
+    ## 2016-06-22 22:17:51 [f2] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:40 [f3] no re-evaluation needed.
+    ## 2016-06-22 22:17:51 [f3] no re-evaluation needed.
 
 ``` r
 ResY
@@ -353,7 +353,7 @@ plot(ResY)
 
 pre-main prep time: 1 ms
 
-[](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test2.svg)
+![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test2.svg)
 
 ``` r
 # Using `cacheflow` together with the package `parallel`
@@ -388,13 +388,13 @@ pRes <- withGraph({
 })
 ```
 
-    ## 2016-06-22 22:04:44 [-] (re-)evaluating...
+    ## 2016-06-22 22:17:56 [-] (re-)evaluating...
 
-    ## 2016-06-22 22:04:44 [-] saving to cache...
+    ## 2016-06-22 22:17:56 [-] saving to cache...
 
-    ## 2016-06-22 22:04:44 [.Primitive("sum")] (re-)evaluating...
+    ## 2016-06-22 22:17:56 [.Primitive("sum")] (re-)evaluating...
 
-    ## 2016-06-22 22:04:44 [.Primitive("sum")] saving to cache...
+    ## 2016-06-22 22:17:56 [.Primitive("sum")] saving to cache...
 
 ``` r
 stopCluster(cl)
@@ -423,7 +423,7 @@ plot(pRes)
 
 pre-main prep time: 1 ms
 
-[](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test3.svg)
+![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test3.svg)
 
 ``` r
 # The same parallel example but with
@@ -459,9 +459,9 @@ pRes <- withGraph({
 })
 ```
 
-    ## 2016-06-22 22:04:48 [-] no re-evaluation needed.
+    ## 2016-06-22 22:18:00 [-] no re-evaluation needed.
 
-    ## 2016-06-22 22:04:48 [.Primitive("sum")] no re-evaluation needed.
+    ## 2016-06-22 22:18:00 [.Primitive("sum")] no re-evaluation needed.
 
 ``` r
 stopCluster(cl)
@@ -494,4 +494,4 @@ plot(pRes)
 
 pre-main prep time: 2 ms
 
-[](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test4.svg)
+![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test4.svg)
