@@ -1,7 +1,7 @@
 Package: cacheflow
 Type: Package
 Title: Simple cached workflow with diagram
-Version: 0.1.0.2
+Version: 0.1.0.3
 Author: Aleksander Rutkowski
 Maintainer: Aleksander Rutkowski <alek.rutkowski@gmail.com>
 Imports:

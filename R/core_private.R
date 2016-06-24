@@ -12,7 +12,7 @@ brackets <- function(str)
     paste0('[',str,']')
 
 cacheDir <- function()
-    paste0(getwd(),'/.cache.db/')
+    path('/.cache.db/')
 
 containsVal <- function(CachedResult)
     'val' %in% names(CachedResult)
@@ -76,6 +76,11 @@ message_ <- function(x, ..., ti=TRUE) { # pipe friendly
         ...)
     x
 }
+
+path <- function(dir)
+    getwd() %>%
+    paste0('/',dir) %>%
+    {suppressWarnings(normalizePath(.,'/'))}
 
 readRDSmem <- memoise::memoise(readRDS)
 

@@ -118,12 +118,17 @@ File <- function(path) {
 #' The working direcotry must not be changed during the workflow.
 #' @export
 initCache <- function() {
-    wd <- getwd()
     for(dir in c('.cache.db','.cache.gv'))
         `if`(dir.exists(dir),
-             message(dQuote(wd,'/',dir),' already exists.'),
+             dir %>%
+                 path %>%
+                 dQuote %>%
+                 message(' already exists.'),
              do(dir.create(dir),
-                message(dQuote(wd,dir),' has been created.')))
+                dir %>%
+                    path %>%
+                    dQuote %>%
+                    message(' has been created.')))
 }
 
 #' Remove the cache
@@ -140,16 +145,17 @@ initCache <- function() {
 removeCache <- function(...) {
     y <- if (!identical(list(...),list(y='y')))
         readline('Are you sure? (y/n) ') else 'y'
-    wd <- getwd()
     if (y=='y')
         for(dir in c('.cache.db','.cache.gv'))
             do(unlink(dir, recursive=TRUE),
                Sys.sleep(3),
                dir.exists(dir) %>%
-                   do(message(dQuote(wd,'/',dir),
+                   do(message(dir %>%
+                                  path %>%
+                                  dQuote,
                               switch((.) %>% as.character,
-                                     'FALSE'=' deleted.',
-                                     'TRUE'=' not deleted! Some problem.'))))
+                                     'FALSE'=' is deleted.',
+                                     'TRUE'=' is not deleted! Some problem.'))))
 }
 
 #' Make parallel R instances aware of the withGraph workflow
@@ -187,7 +193,7 @@ makeGraphAware <- function(cl)
 #' @export
 withGraph <- function(expr) {
     ..gvfname.. <-
-        paste0(getwd(), '/.cache.gv/',
+        paste0(cacheDir(),
                Sys.time() %>%
                    make.names %>%
                    gsub('.',"",.,fixed=TRUE))

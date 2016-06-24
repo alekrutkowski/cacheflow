@@ -25,10 +25,13 @@ plot <- function(x)
     DiagrammeRsvg::export_svg() %T>%
     {i <<- i + 1} %>%
     cat(file=paste0('test',i,'.svg')) %>%
-    {cat(paste0('\n![](https://cdn.rawgit.com/',
-                'alekrutkowski/cacheflow/master/test',i,'.svg)\n'))}
+    # {cat(paste0('\n![](https://cdn.rawgit.com/',
+    #             'alekrutkowski/cacheflow/master/test',i,'.svg)\n'))}
+    {cat(paste0('\n![](',
+                'test',i,'.svg)\n'))}
 i <- 0
-cacheflow::removeCache(y='y')
+# Cleanup for re-runs of this .Rmd
+tryCatch(cacheflow::removeCache(y='y'), error=function(e) NULL)
 ```
 
 ## Installation
@@ -72,9 +75,8 @@ better workflow description language. Your R code/script is your workflow!
 
 Assuming that your workflow consists of many functions, most of which are
 
-- [idempotent](https://en.wikipedia.org/wiki/Idempotence) or even
-[pure](https://en.wikipedia.org/wiki/Pure_function) (the same arguments always
-return the the same values, with no side effects if pure)
+- [pure](https://en.wikipedia.org/wiki/Pure_function) (the same arguments always
+return the the same values, with no side effects)
 - time-consuming to re-evaluate
 
 it makes sense to re-evaluate only if
@@ -127,7 +129,7 @@ efficiency (at the cost of more RAM usage) if the .Rds files are large.
 ```{r}
 # Always remember to set your working directory
 # in the beginning of your workflow!
-setwd('/home/alek/R/cacheflow')
+setwd('//ci1homes11/homes095/rutkoal/R files/cacheflow-gh')
 library(magrittr) # for the pipe operator %>%
 library(cacheflow)
 # Create the necessary subdirectories in your working directory (only once)
