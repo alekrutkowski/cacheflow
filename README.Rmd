@@ -25,10 +25,11 @@ plot <- function(x)
     DiagrammeRsvg::export_svg() %T>%
     {i <<- i + 1} %>%
     cat(file=paste0('test',i,'.svg')) %>%
-    # {cat(paste0('\n![](https://cdn.rawgit.com/',
-    #             'alekrutkowski/cacheflow/master/test',i,'.svg)\n'))}
-    {cat(paste0('\n![](',
-                'test',i,'.svg)\n'))}
+    {cat(paste0('\n![](https://cdn.rawgit.com/',
+                'alekrutkowski/cacheflow/master/test',i,'.svg)\n'))}
+    # If a new chart:
+    # {cat(paste0('\n![](',
+    #             'test',i,'.svg)\n'))}
 i <- 0
 # Cleanup for re-runs of this .Rmd
 tryCatch(cacheflow::removeCache(y='y'), error=function(e) NULL)
@@ -284,5 +285,50 @@ summary(pRes)
 ```{r, results='asis'}
 plot(pRes)
 ```
+
+```{r, results='hide'}
+# The same parallel example but with
+# a trick: using `bquote` to see in the diagram
+# the actual values passed to `cachedCall`
+# inside the anonymous function
+library(parallel)
+cl <- detectCores() %>% makeCluster
+clusterEvalQ(cl, library(cacheflow))
+```
+
+```{r}
+pRes <- withGraph({
+    
+    makeGraphAware(cl) # this is needed!
+    
+    pairs <- data.frame(a=1:4,
+                        b=101:104) %>%
+        split(row.names(.))
+    
+    P <- parLapply(cl,
+                   pairs,
+                   function(x) # see the difference here:
+                       eval(bquote(cachedCall(`+`,
+                                         .(x$a),
+                                         .(x$b)))))
+    
+    B <- cachedCall(`-`, 30, 12)
+    
+    Z <- c(P, list(B))
+    
+    do.call(cachedCall, c(sum, Z))
+})
+stopCluster(cl)
+pRes
+summary(pRes)
+```
+
+```{r, results='asis'}
+# The L next to the numbers means
+# a standard (long) integer in R, see
+# help(NumericConstants)
+plot(pRes)
+```
+
 
 
