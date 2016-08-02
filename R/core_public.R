@@ -217,8 +217,8 @@ withGraph <- function(expr) {
               sep='\n') %>%
         addClass('GVcode')
     expr %>%
-        addClass('CachedWorkflow') %>%
-        `attr<-`('GVcode',gvcode)
+        `attr<-`('GVcode',gvcode) %>%
+        addClass('CachedWorkflow')
 }
 
 
