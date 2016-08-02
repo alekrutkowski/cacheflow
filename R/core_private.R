@@ -93,12 +93,14 @@ saveGVcodeModule <-
              isCached,
              ..gvfname..)
         data.frame(Argu = SubstArgList %>%
-                       as.list %>%
+                       # as.list %>%
                        tail(-1) %>%
                        sapply(function(x)
                            x %>%
                                deparse %>%
-                               paste(collapse=" ")) %>%
+                               paste(collapse="") %>%
+                               gsub('structure\\((.*), class = c\\("File", "character"\\)\\)',
+                                    '\\1',.)) %>%
                        shorten,
                    ArgName = ArgList %>%
                        names %>%
@@ -131,8 +133,8 @@ saveRDS_ <- function(object, file, ...) { # pipe friendly
 }
 
 shorten <- function(str)
-    ifelse(nchar(str)>30,
-           paste0(substr(str, 1, 30),'...'),
+    ifelse(nchar(str)>50,
+           paste0(substr(str, 1, 50),'...'),
            str)
 
 
