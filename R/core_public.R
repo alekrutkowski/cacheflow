@@ -30,14 +30,14 @@ cachedCall <-
         FUN <-
             substitute(..fun..) %>%
             deparse %>%
-            paste(collapse=" ") %>%
+            paste(collapse="") %>%
             shorten
         ArgList <-
             list(...)
         SubstArgList <-
             substitute(list(...))
         SignatList <-
-            list(..fun.., ...) %>%
+            list(FunBody(..fun..), ...) %>%
             lapply(extractSignat)
         Signat <-
             digest(SignatList)

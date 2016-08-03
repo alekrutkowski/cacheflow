@@ -49,6 +49,9 @@ extractSignat <- function(elem)
                        digest(.)),
               digest(elem)))
 
+FunBody <- function(FUN)
+    capture.output(print(FUN))
+
 gvLabColComm <- function(label, color, comment)
     paste('[label=',label %>% unQuote %>% dQuote,
           ', color=', color, '];',
