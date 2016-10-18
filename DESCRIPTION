@@ -9,4 +9,5 @@ Imports:
     magrittr,
     digest,
     DiagrammeR,
-    memoise
+    memoise,
+    codetools

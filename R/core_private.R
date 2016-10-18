@@ -1,6 +1,86 @@
 #' @import magrittr
 NULL
 
+CCall <-
+    function(..future..,
+             ..fun..,
+             FUN,
+             ...) {
+        ..cachedir.. <-
+            cacheDir()
+        if (not(..fun.. %>% is.function))
+            stop('The first argument ..fun.. must be a function!')
+        if (not(dir.exists(..cachedir..)))
+            stop('Directory\n',
+                 dQuote(..cachedir..),
+                 "\ndoes not exist!\n",
+                 'Have you done `initCache()`?')
+        ArgList <-
+            list(...)
+        SubstArgList <-
+            substitute(list(...))
+        SignatList <-
+            list(FunBody(..fun..), ...) %>%
+            lapply(extractSignat)
+        Signat <-
+            digest(SignatList)
+        filename <-
+            paste0(..cachedir..,
+                   Signat,
+                   '.Rds')
+        isCached <-
+            file.exists(filename)
+        ..gvfname.. <-
+            getOption('..gvfname..')
+        # Preparing a GraphViz dot code
+        if (!is.null(..gvfname..))
+            saveGVcodeModule(FUN,
+                             ArgList,
+                             SubstArgList,
+                             SignatList,
+                             Signat,
+                             isCached,
+                             ..gvfname..)
+        # Return value
+        `if`(isCached,
+             list(signat=Signat) %>%
+                 addClass('CachedResult') %>%
+                 message_(brackets(FUN),' no re-evaluation needed.'),
+             ArgList %>%
+                 message_(brackets(FUN),' (re-)evaluating',
+                          `if`(..future.., ' concurrently', ""), '...') %>%
+                          {`if`(..future..,
+                                do.call.async(function(..fun..,Args)
+                                    do.call(..fun..,
+                                            lapply(Args, extractVal)),
+                                    ArgsForFuture(.) %>%
+                                        list(..fun..,.), # to avoid re-saving already saved/cached values
+                                    OutputFile=filename,
+                                    expr=importPackages(),
+                                    globals=c(.globals(..fun..),
+                                              futureImports()),
+                                    other_info=
+                                        paste0('in cached concurrent call of `',
+                                               FUN,'`\n')),
+                                do.call(..fun..,
+                                        lapply(., extractVal)) %>%
+                                    message_(brackets(FUN),' saving to cache...') %>%
+                                    saveRDS_(filename))} %>%
+                 list(signat=Signat,
+                      val=.) %>%
+                 addClass('CachedResult'))
+    }
+
+futureImports <- function()
+    list(extractVal=extractVal,
+         containsVal=containsVal,
+         readRDSmem=readRDS,
+         cacheDir=cacheDir,
+         path=path,
+         ifFutureExtractFuture=ifFutureExtractFuture,
+         extractFuture=extractFuture)
+
+
 addClass <- function(obj, ClassName)
     if (!inherits(obj, ClassName))
         `class<-`(obj,
@@ -8,11 +88,26 @@ addClass <- function(obj, ClassName)
                     class(obj))) else
                         obj
 
+ArgsForFuture <- function(Args)
+    Args %>%
+    lapply(function(x)
+        `if`(x %>% inherits('CachedResult') &&
+                 x %>% containsVal,
+             `if`(x$val %>% inherits('SimpleFuture') %>% not,
+                  `$<-`(x,val,NULL),
+                  x),
+             x))
+
 brackets <- function(str)
     paste0('[',str,']')
 
 cacheDir <- function()
     path('/.cache.db/')
+
+CCA <- function(ccfun, FUN, ...) # cachedCall&Assign
+    assign(paste0('.',deparse(FUN)),
+           eval(bquote(.(ccfun)(.(FUN),...))),
+           envir=parent.frame(2))
 
 containsVal <- function(CachedResult)
     'val' %in% names(CachedResult)
@@ -30,7 +125,7 @@ unQuote <- function(v)
 digest <- function(x, ...)
     digest::digest(x, 'sha512', ...)
 
-do <- `{` # an alias for better code indentation with magrittr pipe in RStudio
+do. <- `{` # an alias for better code indentation with magrittr pipe in RStudio
 
 dQuote <- function(...)
     paste0(...) %>%
@@ -68,6 +163,10 @@ gvLinkLine <- function(from, to, label, color='black')
           to %>% dQuote,
           gvLabColComm(label, color, comment=""))
 
+ifFutureExtractFuture <- function(val)
+    if (val %>% inherits('SimpleFuture'))
+        extractFuture(val) else val
+
 listFiles <- function(paths)
     list.files(path=dirname(paths),
                pattern=paste0(basename(paths),'.*'),
@@ -85,7 +184,8 @@ path <- function(dir)
     paste0('/',dir) %>%
     {suppressWarnings(normalizePath(.,'/'))}
 
-readRDSmem <- memoise::memoise(readRDS)
+readRDSmem <- memoise::memoise(function(x)
+    x %>% readRDS)
 
 saveGVcodeModule <-
     function(FUN,
@@ -108,12 +208,12 @@ saveGVcodeModule <-
                    ArgName = ArgList %>%
                        names %>%
                        `if`(is.null(.),"",.)) %>%
-    within(do(SignatVec <- SignatList %>%
-                  tail(-1) %>%
-                  unlist,
-              Cached <- SignatList %>%
-                  tail(-1) %>%
-                  sapply(inherits, 'signat'))) %>%
+    within(do.(SignatVec <- SignatList %>%
+                   tail(-1) %>%
+                   unlist,
+               Cached <- SignatList %>%
+                   tail(-1) %>%
+                   sapply(inherits, 'signat'))) %>%
     with(c(gvLinkLine(SignatVec, Signat, ArgName),
            if (any(!Cached))
                gvLabLine(SignatVec[!Cached],

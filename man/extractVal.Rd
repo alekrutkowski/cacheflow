@@ -8,7 +8,8 @@ extractVal(arg)
 }
 \arguments{
 \item{arg}{This is normally a \code{CachedResult} returned by
-\code{\link[cacheflow]{cachedCall}}, but does not have to be.
+\code{\link[cacheflow]{cachedCall}} or
+\code{\link[cacheflow]{cachedCallConcur}}, but does not have to be.
 If \code{arg} is not a \code{CachedResult}, \code{extractVal}
 just returns \code{arg}.}
 }

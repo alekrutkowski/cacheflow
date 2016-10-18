@@ -27,9 +27,9 @@ plot <- function(x)
     cat(file=paste0('test',i,'.svg')) %>%
     {cat(paste0('\n![](https://cdn.rawgit.com/',
                 'alekrutkowski/cacheflow/master/test',i,'.svg)\n'))}
-    # If a new chart:
-    # {cat(paste0('\n![](',
-    #             'test',i,'.svg)\n'))}
+# If a new chart:
+# {cat(paste0('\n![](',
+#             'test',i,'.svg)\n'))}
 i <- 0
 # Cleanup for re-runs of this .Rmd
 tryCatch(cacheflow::removeCache(y='y'), error=function(e) NULL)
@@ -57,7 +57,7 @@ In such workflows, it is cumbersome and risky to track manually which
 functions/inputs/arguments have changed and which parts of
 the script should be re-evaluated. It's easier to trigger the re-run
 of the whole script and let the computer do the to comparison with the
-cached resuls to the previous runs to avoid the unnecessary and
+cached results to the previous runs to avoid the unnecessary and
 costly re-evaluations.
 
 #### Goal: re-run your whole R scripts efficiently, only with necessary re-evaluations
@@ -67,7 +67,7 @@ saving human time and machine time. And lower error risk.
 
 #### Inspiration: [remake](https://github.com/richfitz/remake)
 
-But **`cacheflow`** is simpler -- pure R script/code, no need for exteral non-R
+But **`cacheflow`** is simpler -- pure R script/code, no need for external non-R
 files such as [YAML](https://github.com/richfitz/remake#example),
 no cognitive switching cost. With its functional syntax, R seems to be a much
 better workflow description language. Your R code/script is your workflow!
@@ -91,7 +91,7 @@ it makes sense to re-evaluate only if
 working directory, so it:
 
 - offers **persistent** cache: unlike simple [memoisation](https://en.wikipedia.org/wiki/Memoization),
-caching still works when R is closed and re-openned, eliminating the need to
+caching still works when R is closed and re-opened, eliminating the need to
 inefficiently always save and load the whole workspace in an .Rdata file).
 This is also safer. If your .Rdata file gets damaged, the whole workflow
 cache is lost. **`cacheflow`** caches single return values in separate .Rds
@@ -102,16 +102,19 @@ the R core package **`r lnk_('parallel',cran('parallel'))`** is used
 working directory (which implies running them on one computer or using a shared
 network drive with the same paths mapped if running on multiple computers).
 - allows you to see your **workflow as a diagram**, with the re-evaluated
-functions highlited.
+functions highlighted.
 
 ## API
 
-Just 6 functions of which:
+Functions:
 
-- two are for one-off usage: **`initCache`** and **`removeCache`**
-- two core functions: **`cachedCall`** "workhorse"" and **`extractVal`**
+- two for one-off usage: **`initCache`** and **`removeCache`**
+- three core functions: **`cachedCall`**, **`cachedCallConcur`** "workhorses"
+and **`extractVal`**
+- two convenience wrappers of `cachedCall` and `cachedCallConcur`:
+**`do`** and **`do_`**
 - one wrapper function for whole workflow if a diagram of the
-cached function calls and their dependecies is to be generated: **`withGraph`**
+cached function calls and their dependencies is to be generated: **`withGraph`**
 - one to be used only if package `r lnk_('parallel',cran('parallel'))`
 is used inside withGraph: **`makeGraphAware`**
 
@@ -124,6 +127,8 @@ is used inside withGraph: **`makeGraphAware`**
 re-loads of .Rds files, when cached values need to be re-extracted from the
 saved .Rds files at some point. Not strictly needed but further increasing
 efficiency (at the cost of more RAM usage) if the .Rds files are large.
+- `r lnk('codetools','findGlobals')` -- used for passing the values to
+concurrent R instances (in `cachedCallConcur`).
 
 ## Demo
 
@@ -141,7 +146,7 @@ f1 <- function(vec, val) {
     Sys.sleep(1)
     vec + val
 }
-f2 <- function(vec, val) {
+f2 <- function(vec) {
     Sys.sleep(1)
     mean(vec)
 }
@@ -178,7 +183,7 @@ system.time(1:100 %>%
                 extractVal)
 # Of course, a modification of a function also triggers re-evaluation
 # of the modified and the subsequent (dependent) step(s):
-f2 <- function(vec, val) {
+f2 <- function(vec) {
     Sys.sleep(1)
     mean(vec)/3
 }
@@ -215,9 +220,52 @@ system.time(cachedCall(f4, File(tmpf)) %>%
                 extractVal)
 ```
 
-```{r, results='asis'}
-# Drawing diagrams
+### Concurrent (async) calls
 
+```{r}
+# Let's pretend we have 3 complicated pure functions
+# each consuming some time when re-evaluated:
+z1 <- function(v1, v2) { 
+    Sys.sleep(3)
+    v1 + v2
+}
+z2 <- function(vec) {
+    Sys.sleep(3)
+    mean(vec)
+}
+z3 <- function(val1, val2) {
+    val1/val2
+}
+# With `cachedCallConcur` we can evaluate `z1` and `z2`
+# concurrently:
+system.time({
+    zz1 <- cachedCallConcur(z1, 1, 2)
+    zz2 <- cachedCallConcur(z2, 1:10)
+    # No concurrency here, because this is the final value
+    # so we need to wait for the results anyway:
+    zz3 <- cachedCall(z3, zz1, zz2)
+})
+# The waiting time is ca. 3s instead of 3s + 3s.
+```
+
+### Using simple wrappers to avoid redundant typing: auto-assignment in place
+
+```{r}
+do(mean, x=1:10) # is an equivalent of:
+.mean <- cachedCall(mean, x=1:10)
+
+do_(sum, 1:10) # is an equivalent of:
+.sum <- cachedCallConcur(sum, 1:10)
+
+# then use .mean or .sum as input arguments in the subsequent
+# cached calls (simple or concurrent), e.g.:
+do(max, .mean, .sum) # which is an equivalent of:
+.max <- cachedCall(max, .mean, .sum)
+```
+
+### Drawing diagrams
+
+```{r, results='asis'}
 # Let's touch the first function to trigger re-evaluations
 f1 <- sum
 withGraph(1:100 %>%
@@ -246,11 +294,20 @@ extractVal(ResY)
 plot(ResY)
 ```
 
+#### Diagrams in a parallel setting
+
 ```{r, results='hide'}
 # Using `cacheflow` together with the package `parallel`
 # Here's a contrived tivial example for simplicity
 library(parallel)
 cl <- detectCores() %>% makeCluster
+```
+
+```{r, include=FALSE}
+eval(bquote(clusterEvalQ(cl, .libPaths(.(.libPaths()))))) # needed in my private setting
+```
+
+```{r, results='hide'}
 clusterEvalQ(cl, library(cacheflow))
 ```
 
@@ -293,6 +350,13 @@ plot(pRes)
 # inside the anonymous function
 library(parallel)
 cl <- detectCores() %>% makeCluster
+```
+
+```{r, include=FALSE}
+eval(bquote(clusterEvalQ(cl, .libPaths(.(.libPaths()))))) # needed in my private setting
+```
+
+```{r, results='hide'}
 clusterEvalQ(cl, library(cacheflow))
 ```
 
@@ -309,8 +373,8 @@ pRes <- withGraph({
                    pairs,
                    function(x) # see the difference here:
                        eval(bquote(cachedCall(`+`,
-                                         .(x$a),
-                                         .(x$b)))))
+                                              .(x$a),
+                                              .(x$b)))))
     
     B <- cachedCall(`-`, 30, 12)
     

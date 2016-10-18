@@ -15,64 +15,57 @@
 #' if it is used outside \code{\link[cacheflow]{cachedCall}} as
 #' an argument in other functions.
 #' @export
-cachedCall <-
-    function(..fun..,
-             ...) {
-        ..cachedir.. <-
-            cacheDir()
-        if (not(..fun.. %>% is.function))
-            stop('The first argument ..fun.. must be a function!')
-        if (not(dir.exists(..cachedir..)))
-            stop('Directory\n',
-                 dQuote(..cachedir..),
-                 "\ndoes not exist!\n",
-                 'Have you done `initCache()`?')
-        FUN <-
-            substitute(..fun..) %>%
-            deparse %>%
-            paste(collapse="") %>%
-            shorten
-        ArgList <-
-            list(...)
-        SubstArgList <-
-            substitute(list(...))
-        SignatList <-
-            list(FunBody(..fun..), ...) %>%
-            lapply(extractSignat)
-        Signat <-
-            digest(SignatList)
-        filename <-
-            paste0(..cachedir..,
-                   Signat,
-                   '.Rds')
-        isCached <-
-            file.exists(filename)
-        ..gvfname.. <-
-            getOption('..gvfname..')
-        # Preparing a GraphViz dot code
-        if (!is.null(..gvfname..))
-            saveGVcodeModule(FUN,
-                             ArgList,
-                             SubstArgList,
-                             SignatList,
-                             Signat,
-                             isCached,
-                             ..gvfname..)
-        # Return value
-        `if`(isCached,
-             list(signat=Signat) %>%
-                 addClass('CachedResult') %>%
-                 message_(brackets(FUN),' no re-evaluation needed.'),
-             ArgList %>%
-                 lapply(extractVal) %>%
-                 message_(brackets(FUN),' (re-)evaluating...') %>%
-                 do.call(..fun.., .) %>%
-                 message_(brackets(FUN),' saving to cache...') %>%
-                 saveRDS_(filename) %>%
-                 list(signat=Signat,
-                      val=.) %>%
-                 addClass('CachedResult'))
-    }
+cachedCall <- function(..fun.., ...)
+    CCall(..future..=FALSE,
+          ..fun..=..fun..,
+          FUN=substitute(..fun..) %>%
+              deparse %>%
+              paste(collapse="") %>%
+              shorten,
+          ...)
+
+#' Make a cached function call concurrently
+#'
+#' See the help file for \code{\link[cacheflow]{cachedCall}}.
+#' The only difference is that \code{cachedCallConcur} evaluates
+#' the function specified in \code{..fun..} confurrently, via
+#' an async Rscript.call. Use this call tool when inputs (arguments) are
+#' relatively small while the called function is relatively
+#' time-consuming and its return value in not needed immediatelly
+#' in the next workflow step.
+#' @export
+cachedCallConcur <- function(..fun.., ...)
+    CCall(..future..=TRUE,
+          ..fun..=..fun..,
+          FUN=substitute(..fun..) %>%
+              deparse %>%
+              paste(collapse="") %>%
+              shorten,
+          ...)
+
+#' Make a cached function call and assignment
+#'
+#' This is a convenience wrapper around
+#' \code{\link[cacheflow]{cachedCall}}.
+#' @examples
+#' do(mean, x=1:10)
+#' # is an equivalent of
+#' .mean <- cachedCall(mean, x=1:10)
+#' @export
+do <- function(..fun.., ...)
+    CCA(cachedCall, substitute(..fun..), ...)
+
+#' Make a cached function call (concurrently) and assignment
+#'
+#' This is a convenience wrapper around
+#' \code{\link[cacheflow]{cachedCallConcur}}.
+#' @examples
+#' do_(mean, x=1:10)
+#' # is an equivalent of
+#' .mean <- cachedCallConcur(mean, x=1:10)
+#' @export
+do_ <- function(..fun.., ...)
+    CCA(cachedCallConcur, substitute(..fun..), ...)
 
 #' Extract the value of a CachedResult
 #'
@@ -80,7 +73,8 @@ cachedCall <-
 #' if it is used outside \code{\link[cacheflow]{cachedCall}} as
 #' an argument in other functions.
 #' @param arg This is normally a \code{CachedResult} returned by
-#' \code{\link[cacheflow]{cachedCall}}, but does not have to be.
+#' \code{\link[cacheflow]{cachedCall}} or
+#' \code{\link[cacheflow]{cachedCallConcur}}, but does not have to be.
 #' If \code{arg} is not a \code{CachedResult}, \code{extractVal}
 #' just returns \code{arg}.
 #' @return Value of a \code{CachedResult} extracted from cache or
@@ -89,7 +83,8 @@ cachedCall <-
 extractVal <- function(arg)
     `if`(arg %>% inherits('CachedResult'),
          `if`(arg %>% containsVal,
-              arg$val,
+              arg$val %>%
+                  ifFutureExtractFuture,
               readRDSmem(paste0(cacheDir(),
                                 arg$signat,
                                 '.Rds'))),
@@ -124,7 +119,7 @@ initCache <- function() {
                  path %>%
                  dQuote %>%
                  message(' already exists.'),
-             do(dir.create(dir),
+             do.(dir.create(dir),
                 dir %>%
                     path %>%
                     dQuote %>%
@@ -147,10 +142,10 @@ removeCache <- function(...) {
         readline('Are you sure? (y/n) ') else 'y'
     if (y=='y')
         for(dir in c('.cache.db','.cache.gv'))
-            do(unlink(dir, recursive=TRUE),
+            do.(unlink(dir, recursive=TRUE),
                Sys.sleep(3),
                dir.exists(dir) %>%
-                   do(message(dir %>%
+                   do.(message(dir %>%
                                   path %>%
                                   dQuote,
                               switch((.) %>% as.character,
@@ -200,7 +195,7 @@ withGraph <- function(expr) {
     options('..gvfname..'=..gvfname..)
     e <- expression(listFiles(..gvfname..) %>%
                         file.remove)
-    on.exit(do(eval(e),
+    on.exit(do.(eval(e),
                options('..gvfname..'=NULL)))
     eval(e)
     expr

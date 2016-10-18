@@ -2,8 +2,18 @@
 print.CachedResult <- function(x, ...) {
     `if`(x %>% containsVal,
          print(x$val, ...),
-         do(message('CachedResult\n',
+         do.(message('CachedResult\n',
                     'Its value can be extracted with function `extractVal`.')))
+    invisible(x)
+}
+
+#' @export
+print.SimpleFuture <- function(x, ...) {
+    `if`(x %>% containsVal,
+         print(x$val, ...),
+         do.(message('SimpleFuture (result calculated concurrently)\n',
+                    'Its value can be extracted with function `extractVal`\n',
+                    'which may have to wait until the value is computed.')))
     invisible(x)
 }
 
