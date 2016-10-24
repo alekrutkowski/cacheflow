@@ -71,14 +71,16 @@ Demo
 # Always remember to set your working directory
 # in the beginning of your workflow!
 setwd('//ci1homes11/homes095/rutkoal/R files/cacheflow-gh')
+```
+
+``` r
 library(magrittr) # for the pipe operator %>%
 library(cacheflow)
 # Create the necessary subdirectories in your working directory (only once)
 initCache()
 ```
-
-    ## "\\ci1homes11/homes095/rutkoal/R files/cacheflow-gh/.cache.db" has been created.
-    ## "\\ci1homes11/homes095/rutkoal/R files/cacheflow-gh/.cache.gv" has been created.
+    ## "Z:/cacheflow-gh/cacheflow/.cache.db" has been created.
+    ## "Z:/cacheflow-gh/cacheflow/.cache.gv" has been created.
 
 ``` r
 # Let's pretend we have 3 complicated pure functions
@@ -101,16 +103,14 @@ system.time(Res1 <- 1:100 %>%
                 cachedCall(f3, val1=., val2=50) %>%
                 extractVal)
 ```
-
-    ## 2016-10-18 15:38:12.327291 [f1] (re-)evaluating...
-    ## 2016-10-18 15:38:13.330291 [f1] saving to cache...
-    ## 2016-10-18 15:38:13.40329 [f2] (re-)evaluating...
-    ## 2016-10-18 15:38:14.415291 [f2] saving to cache...
-    ## 2016-10-18 15:38:14.694291 [f3] (re-)evaluating...
-    ## 2016-10-18 15:38:15.69929 [f3] saving to cache...
-
+    ## 2016-10-18 21:39:08 [f1] (re-)evaluating...
+    ## 2016-10-18 21:39:09 [f1] saving to cache...
+    ## 2016-10-18 21:39:09 [f2] (re-)evaluating...
+    ## 2016-10-18 21:39:10 [f2] saving to cache...
+    ## 2016-10-18 21:39:10 [f3] (re-)evaluating...
+    ## 2016-10-18 21:39:11 [f3] saving to cache...
     ##    user  system elapsed 
-    ##    0.06    0.05    3.49
+    ##    0.02    0.00    3.03
 
 ``` r
 system.time(Res2 <- 1:100 %>%
@@ -119,13 +119,11 @@ system.time(Res2 <- 1:100 %>%
                 cachedCall(f3, val1=., val2=50) %>%
                 extractVal)
 ```
-
-    ## 2016-10-18 15:38:16.10829 [f1] no re-evaluation needed.
-    ## 2016-10-18 15:38:16.11429 [f2] no re-evaluation needed.
-    ## 2016-10-18 15:38:16.122291 [f3] no re-evaluation needed.
-
+    ## 2016-10-18 21:39:11 [f1] no re-evaluation needed.
+    ## 2016-10-18 21:39:11 [f2] no re-evaluation needed.
+    ## 2016-10-18 21:39:11 [f3] no re-evaluation needed.
     ##    user  system elapsed 
-    ##    0.00    0.01    0.17
+    ##    0.02    0.00    0.02
 
 ``` r
 # The same workflow but without the pipe operator and not timed
@@ -136,21 +134,18 @@ system.time(Res2 <- 1:100 %>%
     Res3 <- extractVal(cachedCall(f3, val1=F2, val2=50))
 }
 ```
-
-    ## 2016-10-18 15:38:16.135291 [f1] no re-evaluation needed.
-    ## 2016-10-18 15:38:16.14129 [f2] no re-evaluation needed.
-    ## 2016-10-18 15:38:16.148291 [f3] no re-evaluation needed.
+    ## 2016-10-18 21:39:11 [f1] no re-evaluation needed.
+    ## 2016-10-18 21:39:11 [f2] no re-evaluation needed.
+    ## 2016-10-18 21:39:11 [f3] no re-evaluation needed.
 
 ``` r
 Res1 == Res2
 ```
-
     ## [1] TRUE
 
 ``` r
 Res2 == Res3
 ```
-
     ## [1] TRUE
 
 ``` r
@@ -163,14 +158,12 @@ system.time(1:100 %>%
                 cachedCall(f3, val1=., val2=100) %>%
                 extractVal)
 ```
-
-    ## 2016-10-18 15:38:16.412291 [f1] no re-evaluation needed.
-    ## 2016-10-18 15:38:16.419291 [f2] no re-evaluation needed.
-    ## 2016-10-18 15:38:16.42629 [f3] (re-)evaluating...
-    ## 2016-10-18 15:38:17.476687 [f3] saving to cache...
-
+    ## 2016-10-18 21:39:11 [f1] no re-evaluation needed.
+    ## 2016-10-18 21:39:11 [f2] no re-evaluation needed.
+    ## 2016-10-18 21:39:11 [f3] (re-)evaluating...
+    ## 2016-10-18 21:39:12 [f3] saving to cache...
     ##    user  system elapsed 
-    ##    0.03    0.05    1.09
+    ##    0.02    0.00    1.02
 
 ``` r
 # Of course, a modification of a function also triggers re-evaluation
@@ -185,15 +178,13 @@ system.time(1:100 %>%
                 cachedCall(f3, val1=., val2=100) %>%
                 extractVal)
 ```
-
-    ## 2016-10-18 15:38:17.727281 [f1] no re-evaluation needed.
-    ## 2016-10-18 15:38:17.727281 [f2] (re-)evaluating...
-    ## 2016-10-18 15:38:18.71567 [f2] saving to cache...
-    ## 2016-10-18 15:38:18.77968 [f3] (re-)evaluating...
-    ## 2016-10-18 15:38:19.79067 [f3] saving to cache...
-
+    ## 2016-10-18 21:39:12 [f1] no re-evaluation needed.
+    ## 2016-10-18 21:39:12 [f2] (re-)evaluating...
+    ## 2016-10-18 21:39:13 [f2] saving to cache...
+    ## 2016-10-18 21:39:13 [f3] (re-)evaluating...
+    ## 2016-10-18 21:39:14 [f3] saving to cache...
     ##    user  system elapsed 
-    ##    0.03    0.01    2.14
+    ##    0.00    0.02    2.02
 
 ``` r
 # Paths to files need to be wrapped in File()
@@ -212,18 +203,15 @@ system.time(ResA <-
                 cachedCall(f4, File(tmpf)) %>%
                 extractVal)
 ```
-
-    ## 2016-10-18 15:38:20.23568 [f4] (re-)evaluating...
-    ## 2016-10-18 15:38:21.24368 [f4] saving to cache...
-
+    ## 2016-10-18 21:39:14 [f4] (re-)evaluating...
+    ## 2016-10-18 21:39:15 [f4] saving to cache...
     ##    user  system elapsed 
-    ##    0.03    0.04    1.23
+    ##       0       0       1
 
 ``` r
 tmpf2 <- tempfile()
 file.copy(tmpf, tmpf2)
 ```
-
     ## [1] TRUE
 
 ``` r
@@ -231,16 +219,13 @@ system.time(ResB <-
                 cachedCall(f4, File(tmpf2)) %>%
                 extractVal)
 ```
-
-    ## 2016-10-18 15:38:21.59168 [f4] no re-evaluation needed.
-
+    ## 2016-10-18 21:39:15 [f4] no re-evaluation needed.
     ##    user  system elapsed 
-    ##    0.01    0.00    0.10
+    ##    0.01    0.00    0.01
 
 ``` r
 identical(ResA, ResB)
 ```
-
     ## [1] TRUE
 
 ``` r
@@ -250,12 +235,10 @@ cat(c(letters,1:10),
 system.time(cachedCall(f4, File(tmpf)) %>%
                 extractVal)
 ```
-
-    ## 2016-10-18 15:38:21.83768 [f4] (re-)evaluating...
-    ## 2016-10-18 15:38:22.84468 [f4] saving to cache...
-
+    ## 2016-10-18 21:39:15 [f4] (re-)evaluating...
+    ## 2016-10-18 21:39:16 [f4] saving to cache...
     ##    user  system elapsed 
-    ##    0.00    0.01    1.10
+    ##    0.02    0.00    1.01
 
 ### Concurrent (async) calls
 
@@ -263,11 +246,11 @@ system.time(cachedCall(f4, File(tmpf)) %>%
 # Let's pretend we have 3 complicated pure functions
 # each consuming some time when re-evaluated:
 z1 <- function(v1, v2) { 
-    Sys.sleep(3)
+    Sys.sleep(5)
     v1 + v2
 }
 z2 <- function(vec) {
-    Sys.sleep(3)
+    Sys.sleep(5)
     mean(vec)
 }
 z3 <- function(val1, val2) {
@@ -283,17 +266,17 @@ system.time({
     zz3 <- cachedCall(z3, zz1, zz2)
 })
 ```
-
-    ## 2016-10-18 15:38:23.24767 [z1] (re-)evaluating concurrently...
-    ## 2016-10-18 15:38:23.42068 [z2] (re-)evaluating concurrently...
-    ## 2016-10-18 15:38:23.62567 [z3] (re-)evaluating...
-    ## 2016-10-18 15:38:28.003477 [z3] saving to cache...
-
+    ## 2016-10-18 21:39:17 [z1] (re-)evaluating concurrently...
+    ## 2016-10-18 21:39:17 [z2] (re-)evaluating concurrently...
+    ## 2016-10-18 21:39:17 [z3] (re-)evaluating...
+    ## 2016-10-18 21:39:22 [z3] saving to cache...
     ##    user  system elapsed 
-    ##    0.22    0.30    4.80
+    ##    0.07    0.04    5.39
 
 ``` r
-# The waiting time is ca. 3s instead of 3s + 3s.
+# The waiting time is ca. 5s (plus the time needed for
+# saving inputs for Rscript and opening Rscript)
+# instead of 5s + 5s.
 ```
 
 ### Using simple wrappers to avoid redundant typing: auto-assignment in place
@@ -301,43 +284,37 @@ system.time({
 ``` r
 do(mean, x=1:10) # is an equivalent of:
 ```
-
-    ## 2016-10-18 15:38:28.284476 [mean] (re-)evaluating...
-    ## 2016-10-18 15:38:28.286477 [mean] saving to cache...
+    ## 2016-10-18 21:39:22 [mean] (re-)evaluating...
+    ## 2016-10-18 21:39:22 [mean] saving to cache...
 
 ``` r
 .mean <- cachedCall(mean, x=1:10)
 ```
-
-    ## 2016-10-18 15:38:28.326477 [mean] no re-evaluation needed.
+    ## 2016-10-18 21:39:22 [mean] no re-evaluation needed.
 
 ``` r
-do_(sum, 1:10) # is an equivalent of:
+do_(sum, 1:10) # is an equivalent of `cachedCallConcur` below:
 ```
-
-    ## 2016-10-18 15:38:28.334476 [sum] (re-)evaluating concurrently...
+    ## 2016-10-18 21:39:22 [sum] (re-)evaluating concurrently...
 
 ``` r
+Sys.sleep(1) # just to make sure the concurrent call is completed
 .sum <- cachedCallConcur(sum, 1:10)
 ```
-
-    ## 2016-10-18 15:38:28.504477 [sum] (re-)evaluating concurrently...
+    ## 2016-10-18 21:39:23 [sum] no re-evaluation needed.
 
 ``` r
 # then use .mean or .sum as input arguments in the subsequent
 # cached calls (simple or concurrent), e.g.:
 do(max, .mean, .sum) # which is an equivalent of:
 ```
-
-    ## 2016-10-18 15:38:28.731477 [max] (re-)evaluating...
-    ## 2016-10-18 15:38:29.993477 [max] saving to cache...
+    ## 2016-10-18 21:39:23 [max] (re-)evaluating...
+    ## 2016-10-18 21:39:23 [max] saving to cache...
 
 ``` r
 .max <- cachedCall(max, .mean, .sum)
 ```
-
-    ## 2016-10-18 15:38:30.041476 [max] (re-)evaluating...
-    ## 2016-10-18 15:38:30.063477 [max] saving to cache...
+    ## 2016-10-18 21:39:23 [max] no re-evaluation needed.
 
 ### Drawing diagrams
 
@@ -350,13 +327,14 @@ withGraph(1:100 %>%
               cachedCall(f3, val1=., val2=50)) %>%
     plot
 ```
+    ## 2016-10-18 21:39:23 [f1] (re-)evaluating...
+    ## 2016-10-18 21:39:23 [f1] saving to cache...
+    ## 2016-10-18 21:39:23 [f2] (re-)evaluating...
+    ## 2016-10-18 21:39:24 [f2] saving to cache...
+    ## 2016-10-18 21:39:24 [f3] (re-)evaluating...
+    ## 2016-10-18 21:39:25 [f3] saving to cache...
 
-    ## 2016-10-18 15:38:30.343477 [f1] (re-)evaluating...
-    ## 2016-10-18 15:38:30.345477 [f1] saving to cache...
-    ## 2016-10-18 15:38:30.464477 [f2] (re-)evaluating...
-    ## 2016-10-18 15:38:31.466476 [f2] saving to cache...
-    ## 2016-10-18 15:38:31.774477 [f3] (re-)evaluating...
-    ## 2016-10-18 15:38:32.776477 [f3] saving to cache...
+pre-main prep time: 5 ms
 
 ![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test1.svg)
 
@@ -369,15 +347,13 @@ ResY <- withGraph({
     ResX <- cachedCall(f3, val1=F2, val2=50)
 })
 ```
-
-    ## 2016-10-18 15:38:34.186476 [f1] no re-evaluation needed.
-    ## 2016-10-18 15:38:34.250477 [f2] no re-evaluation needed.
-    ## 2016-10-18 15:38:34.364476 [f3] no re-evaluation needed.
+    ## 2016-10-18 21:39:33 [f1] no re-evaluation needed.
+    ## 2016-10-18 21:39:33 [f2] no re-evaluation needed.
+    ## 2016-10-18 21:39:33 [f3] no re-evaluation needed.
 
 ``` r
 ResY
 ```
-
     ## CachedWorkflow
     ## It can be drawn as a diagram with function `plot`.
     ## The returned value:
@@ -387,17 +363,14 @@ ResY
 ``` r
 summary(ResY)
 ```
-
     ## The number of function calls in the
     ## CachedWorkflow made with `cachedCall`:
-
     ##    cached evaluated     total 
     ##         3         0         3
 
 ``` r
 extractVal(ResY)
 ```
-
     ## [1] 33.68667
 
 ``` r
@@ -405,6 +378,8 @@ extractVal(ResY)
 # there were no re-evaluations
 plot(ResY)
 ```
+
+pre-main prep time: 5 ms
 
 ![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test2.svg)
 
@@ -445,36 +420,33 @@ pRes <- withGraph({
     do.call(cachedCall, c(sum, Z))
 })
 ```
-
-    ## 2016-10-18 15:38:40.080677 [-] (re-)evaluating...
-    ## 2016-10-18 15:38:40.082676 [-] saving to cache...
-    ## 2016-10-18 15:38:40.243676 [.Primitive("sum")] (re-)evaluating...
-    ## 2016-10-18 15:38:40.248677 [.Primitive("sum")] saving to cache...
+    ## 2016-10-18 21:39:36 [-] (re-)evaluating...
+    ## 2016-10-18 21:39:36 [-] saving to cache...
+    ## 2016-10-18 21:39:36 [.Primitive("sum")] (re-)evaluating...
+    ## 2016-10-18 21:39:36 [.Primitive("sum")] saving to cache...
 
 ``` r
 stopCluster(cl)
 pRes
 ```
-
     ## CachedWorkflow
     ## It can be drawn as a diagram with function `plot`.
     ## The returned value:
-
     ## [1] 438
 
 ``` r
 summary(pRes)
 ```
-
     ## The number of function calls in the
     ## CachedWorkflow made with `cachedCall`:
-
     ##    cached evaluated     total 
     ##         0         6         6
 
 ``` r
 plot(pRes)
 ```
+
+pre-main prep time: 4 ms
 
 ![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test3.svg)
 
@@ -514,15 +486,13 @@ pRes <- withGraph({
     do.call(cachedCall, c(sum, Z))
 })
 ```
-
-    ## 2016-10-18 15:38:47.236277 [-] no re-evaluation needed.
-    ## 2016-10-18 15:38:47.361277 [.Primitive("sum")] no re-evaluation needed.
+    ## 2016-10-18 21:39:40 [-] no re-evaluation needed.
+    ## 2016-10-18 21:39:40 [.Primitive("sum")] no re-evaluation needed.
 
 ``` r
 stopCluster(cl)
 pRes
 ```
-
     ## CachedWorkflow
     ## It can be drawn as a diagram with function `plot`.
     ## The returned value:
@@ -532,10 +502,8 @@ pRes
 ``` r
 summary(pRes)
 ```
-
     ## The number of function calls in the
     ## CachedWorkflow made with `cachedCall`:
-
     ##    cached evaluated     total 
     ##         6         0         6
 
@@ -545,5 +513,7 @@ summary(pRes)
 # help(NumericConstants)
 plot(pRes)
 ```
+
+pre-main prep time: 7 ms
 
 ![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test4.svg)

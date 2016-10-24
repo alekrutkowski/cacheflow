@@ -132,10 +132,13 @@ concurrent R instances (in `cachedCallConcur`).
 
 ## Demo
 
-```{r}
+```{r, eval=FALSE}
 # Always remember to set your working directory
 # in the beginning of your workflow!
 setwd('//ci1homes11/homes095/rutkoal/R files/cacheflow-gh')
+```
+
+```{r}
 library(magrittr) # for the pipe operator %>%
 library(cacheflow)
 # Create the necessary subdirectories in your working directory (only once)
@@ -226,11 +229,11 @@ system.time(cachedCall(f4, File(tmpf)) %>%
 # Let's pretend we have 3 complicated pure functions
 # each consuming some time when re-evaluated:
 z1 <- function(v1, v2) { 
-    Sys.sleep(3)
+    Sys.sleep(5)
     v1 + v2
 }
 z2 <- function(vec) {
-    Sys.sleep(3)
+    Sys.sleep(5)
     mean(vec)
 }
 z3 <- function(val1, val2) {
@@ -245,7 +248,9 @@ system.time({
     # so we need to wait for the results anyway:
     zz3 <- cachedCall(z3, zz1, zz2)
 })
-# The waiting time is ca. 3s instead of 3s + 3s.
+# The waiting time is ca. 5s (plus the time needed for
+# saving inputs for Rscript and opening Rscript)
+# instead of 5s + 5s.
 ```
 
 ### Using simple wrappers to avoid redundant typing: auto-assignment in place
@@ -254,7 +259,8 @@ system.time({
 do(mean, x=1:10) # is an equivalent of:
 .mean <- cachedCall(mean, x=1:10)
 
-do_(sum, 1:10) # is an equivalent of:
+do_(sum, 1:10) # is an equivalent of `cachedCallConcur` below:
+Sys.sleep(1) # just to make sure the concurrent call is completed
 .sum <- cachedCallConcur(sum, 1:10)
 
 # then use .mean or .sum as input arguments in the subsequent
