@@ -57,7 +57,7 @@ CCall <-
                                         list(..fun..,.), # to avoid re-saving already saved/cached values
                                     OutputFile=filename,
                                     expr=importPackages(),
-                                    globals=c(.globals(..fun..),
+                                    globals=c(.globals(..fun.., parent.frame()),
                                               futureImports()),
                                     other_info=
                                         paste0('in cached concurrent call of `',
