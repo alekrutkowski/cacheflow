@@ -1,6 +1,6 @@
 do.call.async <- function(FUN,
                           arglist=list(),
-                          globals=.globals(FUN),
+                          globals=.globals(FUN, parent.frame()),
                           qexpr=NULL, # use fe.g. or importing libraries or setting seed
                           expr=importPackages(),
                           OutputFile=.OutputFile(),
@@ -45,41 +45,59 @@ do.call.async <- function(FUN,
 }
 
 extractFuture <- function(SimpleFuture, delete=FALSE) {
-    signal <- paste0(SimpleFuture['OutputFile'],'_')
-    repeat {
-        if (signal %>% file.exists) {
-            res <-
-                SimpleFuture['OutputFile'] %>%
-                readRDSmem
-            if (res %>% inherits('simpleError'))
-                stop(res$message, call.=FALSE)
-            if (delete)
-                c(signal,
-                  SimpleFuture['OutputFile']) %>%
-                file.remove
-            suppressWarnings(SimpleFuture['CodeFile'] %>%
-                                 file.remove)
-            return(res)
-            break
-        }
-        Sys.sleep(.001)
-    }
+    waitUntil(isFutureReady, SimpleFuture)
+    res <-
+        SimpleFuture['OutputFile'] %>%
+        readRDSmem
+    if (res %>% inherits('simpleError'))
+        stop(res$message, call.=FALSE)
+    if (delete)
+        c(paste0(SimpleFuture['OutputFile'],'_'),
+          SimpleFuture['OutputFile']) %>%
+        file.remove
+    suppressWarnings(SimpleFuture['CodeFile'] %>%
+                         file.remove)
+    res
 }
 
 dq <- function(x)
     paste0('"',x,'"')
 
-.globals <- function(FUN)
+isFutureReady <- function(SimpleFuture) {
+    stopifnot(SimpleFuture %>%
+                  inherits('SimpleFuture'))
+    SimpleFuture["OutputFile"] %>%
+        paste0('_') %>%
+        file.exists
+}
+
+waitUntil <- function(FUN, ...) {
+    repeat {
+        if (FUN(...)) break
+        Sys.sleep(.001)
+    }
+}
+
+.globals <- function(FUN, env)
     `if`(FUN %>% is.primitive,
          list(),
-         codetools::findGlobals(FUN) %>%
-             lapplyWithNames(. %>%
-             {tryCatch(get(.),
-                       error = function(e)
-                           stop('In argument `globals` of function `do.call.async`: ',
-                                geterrmessage(),
-                                call.=FALSE))}))
-
+         do.(L1 <-
+                 codetools::findGlobals(FUN) %>%
+                 lapplyWithNames(. %>%
+                                     get0(envir =
+                                              env,
+                                          ifnotfound =
+                                              NA %>%
+                                              addClass('not found in .globals'))),
+             L2 <-
+                 Filter(. %>% inherits('not found in .globals') %>% not, L1),
+             setdiff(names(L1),
+                     names(L2)) %>%
+                     {`if`(length(.)>0,
+                           warning('Object(s)\n',
+                                   paste(paste0('`',.,'`'), collapse='\n'),
+                                   '\ncannot be found.', call.=FALSE))},
+             L2))
 
 importPackages <- function()
     search() %>%
