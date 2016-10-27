@@ -36,9 +36,10 @@ do.call.async <- function(FUN,
     cat(code,
         file=CodeFile,
         sep='\n')
-    system(paste(dQuote(Sys.which('Rscript')),
-                 dQuote(CodeFile)),
-           wait=FALSE, show.output.on.console=FALSE)
+    system(paste(dq(Sys.which('Rscript')),
+                 dq(CodeFile)),
+           wait=FALSE,
+           ignore.stdout=TRUE, ignore.stderr=TRUE)
     c(OutputFile=OutputFile,
       CodeFile=CodeFile) %>%
         addClass('SimpleFuture')
