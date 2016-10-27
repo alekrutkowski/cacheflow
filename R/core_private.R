@@ -106,11 +106,11 @@ brackets <- function(str)
     paste0('[',str,']')
 
 cacheDir <- function()
-    path('/.cache.db') %>%
+    path('.cache.db') %>%
     paste0('/')
 
 gvDir <- function()
-    path('/.cache.gv') %>%
+    path('.cache.gv') %>%
     paste0('/')
 
 CCA <- function(ccfun, FUN, ...) # cachedCall&Assign
