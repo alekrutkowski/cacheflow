@@ -108,14 +108,16 @@ functions highlighted.
 
 Functions:
 
-- two for one-off usage: **`initCache`** and **`removeCache`**
-- three core functions: **`cachedCall`**, **`cachedCallConcur`** "workhorses"
+- for one-off usage: **`initCache`**, **`removeCache`**,
+- for keeping the cache size under control:
+**`removeOldCache`**, **`keepCacheFor`**
+- core functions: **`cachedCall`**, **`cachedCallConcur`** "workhorses"
 and **`extractVal`**
-- two convenience wrappers of `cachedCall` and `cachedCallConcur`:
+- convenience wrappers of `cachedCall` and `cachedCallConcur`:
 **`do`** and **`do_`**
-- one wrapper function for whole workflow if a diagram of the
+- a wrapper function for whole workflow if a diagram of the
 cached function calls and their dependencies is to be generated: **`withGraph`**
-- one to be used only if package `r lnk_('parallel',cran('parallel'))`
+- a simple function to be used only if package `r lnk_('parallel',cran('parallel'))`
 is used inside withGraph: **`makeGraphAware`**
 
 ## Dependencies

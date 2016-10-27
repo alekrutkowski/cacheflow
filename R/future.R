@@ -38,7 +38,7 @@ do.call.async <- function(FUN,
         sep='\n')
     system(paste(dQuote(Sys.which('Rscript')),
                  dQuote(CodeFile)),
-           wait=FALSE)
+           wait=FALSE, show.output.on.console=FALSE)
     c(OutputFile=OutputFile,
       CodeFile=CodeFile) %>%
         addClass('SimpleFuture')
@@ -101,11 +101,11 @@ waitUntil <- function(FUN, ...) {
 
 importPackages <- function()
     search() %>%
-    {.[grep('^package:',.)]} %>%
+    extract(grep('^package:',.)) %>%
     sub('^package:',"",.) %>%
     lapply(function(x) bquote(library(.(x)))) %>%
-    c(bquote(.libPaths(.(.libPaths()))),
-      .)
+    c(bquote(environment(.libPaths)$.lib.loc <-
+                 .(.libPaths())), .)
 
 lapplyWithNames <- function(charvec, FUN)
     charvec %>%

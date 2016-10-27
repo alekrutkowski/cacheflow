@@ -120,10 +120,10 @@ initCache <- function() {
                  dQuote %>%
                  message(' already exists.'),
              do.(dir.create(dir),
-                dir %>%
-                    path %>%
-                    dQuote %>%
-                    message(' has been created.')))
+                 dir %>%
+                     path %>%
+                     dQuote %>%
+                     message(' has been created.')))
 }
 
 #' Remove the cache
@@ -138,19 +138,80 @@ initCache <- function() {
 #' \code{\link[cacheflow]{initCache}} and their contents.
 #' @export
 removeCache <- function(...) {
-    y <- if (!identical(list(...),list(y='y')))
-        readline('Are you sure? (y/n) ') else 'y'
+    y <- areYouSure(...)
     if (y=='y')
         for(dir in c('.cache.db','.cache.gv'))
             do.(unlink(dir, recursive=TRUE),
-               Sys.sleep(3),
-               dir.exists(dir) %>%
-                   do.(message(dir %>%
-                                  path %>%
-                                  dQuote,
-                              switch((.) %>% as.character,
-                                     'FALSE'=' is deleted.',
-                                     'TRUE'=' is not deleted! Some problem.'))))
+                Sys.sleep(3),
+                dir.exists(dir) %>%
+                    do.(message(dir %>%
+                                    path %>%
+                                    dQuote,
+                                switch((.) %>% as.character,
+                                       'FALSE'=' is deleted.',
+                                       'TRUE'=' is not deleted! Some problem.'))))
+}
+
+#' Remove the old cache
+#'
+#' @param ... A safety check. If \code{...} is not specified, R asks for
+#' confirmation if \code{removeOldCache} is used interactively.
+#' If confirmed interactively by a user or if
+#' \code{...} contains argument named \code{y} and equal \code{"y"},
+#' i.e. with a call \code{removeOldCache(y = "y")},
+#' the old cache files are deleted, i.e. the files for those
+#' \code{CachedResult} objects that are no longer present in the
+#' current environment. \code{removeOldCache} looks for the current
+#' \code{CachedResult} objects also nested inside lists.
+#' @export
+removeOldCache <- function(...) {
+    y <- areYouSure(...)
+    p <- parent.frame()
+    if (y=='y')
+        ls(all.names=TRUE, envir=p) %>%
+        lapply(get, envir=p) %>%
+        keepCacheFor
+}
+
+#' Keep the cache files only for specific objects
+#'
+#' @param listOfCachedResults A list of \code{CachedResult} objects
+#' for which the cache files should be kept. The cache files for
+#' all other objects
+#' (both those in memory and old ones which are no longer in memory)
+#' are deleted.
+#' @export
+keepCacheFor <- function(listOfCachedResults) {
+    stopifnot(listOfCachedResults %>% is.list)
+    extrSigRecur <- function(X)
+        X %>% sapply(function(x)
+            `if`(x %>% inherits('CachedResult'),
+                 x$signat,
+                 `if`(x %>% is.list,
+                      x %>% extrSigRecur,
+                      NULL)))
+    sig_to_keep <-
+        listOfCachedResults %>%
+        extrSigRecur %>%
+        unlist
+    all_files <-
+        list.files(path=cacheDir(),
+                   pattern='^.*\\.Rds.*')
+    sig_all <-
+        all_files %>%
+        sub('.Rds_', "", ., fixed=TRUE) %>%
+        sub('.Rds', "", ., fixed=TRUE)
+    sig_to_remove <-
+        setdiff(sig_all, sig_to_keep)
+    all_files[sig_all %in% sig_to_remove] %>%
+    {`if`(length(.)==0, 0,
+          paste0(cacheDir(),.) %>%
+              file.remove %>%
+              Filter(isTRUE,.) %>%
+              length)} %>%
+        message(' old cache file(s) removed.\n',
+                length(all_files) - .,
+                ' cache file(s) kept.')
 }
 
 #' Make parallel R instances aware of the withGraph workflow
@@ -188,7 +249,7 @@ makeGraphAware <- function(cl)
 #' @export
 withGraph <- function(expr) {
     ..gvfname.. <-
-        paste0(cacheDir(),
+        paste0(gvDir(),
                Sys.time() %>%
                    make.names %>%
                    gsub('.',"",.,fixed=TRUE))
@@ -196,7 +257,7 @@ withGraph <- function(expr) {
     e <- expression(listFiles(..gvfname..) %>%
                         file.remove)
     on.exit(do.(eval(e),
-               options('..gvfname..'=NULL)))
+                options('..gvfname..'=NULL)))
     eval(e)
     expr
     gvcode <- listFiles(..gvfname..) %>%

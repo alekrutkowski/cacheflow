@@ -88,6 +88,10 @@ addClass <- function(obj, ClassName)
                     class(obj))) else
                         obj
 
+areYouSure <- function(...)
+    if (!identical(list(...),list(y='y')))
+        readline('Are you sure? (y/n) ') else 'y'
+
 ArgsForFuture <- function(Args)
     Args %>%
     lapply(function(x)
@@ -102,7 +106,12 @@ brackets <- function(str)
     paste0('[',str,']')
 
 cacheDir <- function()
-    path('/.cache.db/')
+    path('/.cache.db') %>%
+    paste0('/')
+
+gvDir <- function()
+    path('/.cache.gv') %>%
+    paste0('/')
 
 CCA <- function(ccfun, FUN, ...) # cachedCall&Assign
     assign(paste0('.',deparse(FUN)),
