@@ -45,7 +45,7 @@ do.call.async <- function(FUN,
         addClass('SimpleFuture')
 }
 
-extractFuture <- function(SimpleFuture, delete=FALSE) {
+extractFuture <- function(SimpleFuture, delete=TRUE) {
     waitUntil(isFutureReady, SimpleFuture)
     res <-
         SimpleFuture['OutputFile'] %>%

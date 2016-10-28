@@ -174,7 +174,7 @@ gvLinkLine <- function(from, to, label, color='black')
 
 ifFutureExtractFuture <- function(val)
     if (val %>% inherits('SimpleFuture'))
-        extractFuture(val) else val
+        extractFuture(val, delete=FALSE) else val
 
 listFiles <- function(paths)
     list.files(path=dirname(paths),
