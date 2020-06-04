@@ -1,7 +1,42 @@
 cacheflow -- R package for simple cached workflow with diagram bonus
 ================
 Aleksander Rutkowski
-2016-10-27
+2020-06-04
+
+*NEW!*
+----
+
+*See convenience wrappers [`do()`](https://rdrr.io/github/alekrutkowski/cacheflow/man/do.html) and [`do_()`](https://rdrr.io/github/alekrutkowski/cacheflow/man/do.html).*
+
+*Example usage:*
+``` r
+do(mean, x=1:10)
+# is an equivalent of
+.mean <- cachedCall(mean, x=1:10)
+
+do_(mean, x=1:10)
+# is an equivalent of
+.mean <- cachedCallConcur(mean, x=1:10)
+```
+
+*So, the demo example below could be simplified:*
+``` r
+# Original code:
+{
+    hundred <- 1:100
+    F1 <- cachedCall(f1, vec=hundred, val=3) # <-- explicitly named returned value F1
+    F2 <- cachedCall(f2, F1)                 # <-- explicitly named returned value F2
+    Res3 <- extractVal(cachedCall(f3, val1=F2, val2=50))
+}
+
+Simplified code:
+{
+    hundred <- 1:100
+    do(f1, vec=hundred, val=3) # <-- implicit returned value .f1
+    do(f2, .f1)                # <-- implicit returned value .f2
+    Res3 <- extractVal(cachedCall(f3, val1=.f2, val2=50))
+}
+```
 
 Installation
 ------------
