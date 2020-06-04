@@ -29,7 +29,7 @@ do_(mean, x=1:10)
     Res3 <- extractVal(cachedCall(f3, val1=F2, val2=50))
 }
 
-Simplified code:
+# Simplified code:
 {
     hundred <- 1:100
     do(f1, vec=hundred, val=3) # <-- implicit returned value .f1
