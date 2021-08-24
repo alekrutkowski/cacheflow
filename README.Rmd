@@ -41,7 +41,7 @@ tryCatch(cacheflow::removeCache(y='y'), error=function(e) NULL)
 
 *Example usage:*
 
-``` r
+```{r, eval=FALSE}
 do(mean, x=1:10)
 # is an equivalent of
 .mean <- cachedCall(mean, x=1:10)
@@ -53,7 +53,7 @@ do_(mean, x=1:10)
 
 *So, the demo example below could be simplified:*
 
-``` r
+```{r, eval=FALSE}
 # Original code:
 {
     hundred <- 1:100
