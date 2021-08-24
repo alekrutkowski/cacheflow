@@ -12,20 +12,20 @@ do.call.async <- function(FUN,
         c('FUN', 'arglist', 'globals') %>%
         lapplyWithNames(function(x)
             tempfile() %T>%
-                saveRDS(get(x),.))
+                qsave(get(x),.))
     code <-
         bquote({
             .(expr)
             .(substitute(qexpr))
-            list2env(readRDS(.(FileNames$globals)),
+            list2env(qs::qread(.(FileNames$globals)),
                      envir=globalenv())
             res <-
-                tryCatch(do.call(readRDS(.(FileNames$FUN)),
-                                 readRDS(.(FileNames$arglist))),
+                tryCatch(do.call(qs::qread(.(FileNames$FUN)),
+                                 qs::qread(.(FileNames$arglist))),
                          error = function(e) e)
             if (inherits(res,'simpleError'))
                 res$message <- paste0(.(other_info), res$message)
-            saveRDS(res, .(OutputFile))
+            qs::qsave(res, .(OutputFile))
             cat("", file=paste0(.(OutputFile),'_'))
             file.remove(as.character(.(FileNames)))
         }) %>%
@@ -37,9 +37,11 @@ do.call.async <- function(FUN,
         file=CodeFile,
         sep='\n')
     system(paste(dq(Sys.which('Rscript')),
-                 dq(CodeFile)),
+                 dq(CodeFile))
+           ,
            wait=FALSE,
-           ignore.stdout=TRUE, ignore.stderr=TRUE)
+           ignore.stdout=TRUE, ignore.stderr=TRUE
+           )
     c(OutputFile=OutputFile,
       CodeFile=CodeFile) %>%
         addClass('SimpleFuture')
@@ -49,7 +51,7 @@ extractFuture <- function(SimpleFuture, delete=TRUE) {
     waitUntil(isFutureReady, SimpleFuture)
     res <-
         SimpleFuture['OutputFile'] %>%
-        readRDSmem
+        qreadMem
     if (res %>% inherits('simpleError'))
         stop(res$message, call.=FALSE)
     if (delete)

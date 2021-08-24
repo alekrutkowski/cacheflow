@@ -85,10 +85,10 @@ extractVal <- function(arg)
          `if`(arg %>% containsVal,
               arg$val %>%
                   ifFutureExtractFuture,
-              readRDSmem(paste0(cacheDir(),
+              qreadMem(paste0(cacheDir(),
                                 arg$signat,
-                                '.Rds'))),
-         arg)
+                                '.Rqs'))),
+         ifFutureExtractFuture(arg))
 
 #' Tag arguments in cachedCall as files
 #'
@@ -196,11 +196,11 @@ keepCacheFor <- function(listOfCachedResults) {
         unlist
     all_files <-
         list.files(path=cacheDir(),
-                   pattern='^.*\\.Rds.*')
+                   pattern='^.*\\.Rqs.*')
     sig_all <-
         all_files %>%
-        sub('.Rds_', "", ., fixed=TRUE) %>%
-        sub('.Rds', "", ., fixed=TRUE)
+        sub('.Rqs_', "", ., fixed=TRUE) %>%
+        sub('.Rqs', "", ., fixed=TRUE)
     sig_to_remove <-
         setdiff(sig_all, sig_to_keep)
     all_files[sig_all %in% sig_to_remove] %>%

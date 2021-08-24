@@ -1,14 +1,16 @@
-cacheflow -- R package for simple cached workflow with diagram bonus
+cacheflow – R package for simple cached workflow with diagram bonus
 ================
 Aleksander Rutkowski
-2020-06-04
+2021-08-24
 
-*NEW!*
-----
+## *NEW!*
 
-*See convenience wrappers [`do()`](https://rdrr.io/github/alekrutkowski/cacheflow/man/do.html) and [`do_()`](https://rdrr.io/github/alekrutkowski/cacheflow/man/do.html).*
+*See convenience wrappers
+[`do()`](https://rdrr.io/github/alekrutkowski/cacheflow/man/do.html) and
+[`do_()`](https://rdrr.io/github/alekrutkowski/cacheflow/man/do.html).*
 
 *Example usage:*
+
 ``` r
 do(mean, x=1:10)
 # is an equivalent of
@@ -20,6 +22,7 @@ do_(mean, x=1:10)
 ```
 
 *So, the demo example below could be simplified:*
+
 ``` r
 # Original code:
 {
@@ -38,32 +41,51 @@ do_(mean, x=1:10)
 }
 ```
 
-Installation
-------------
+## Installation
 
 ``` r
 devtools::install_github('alekrutkowski/cacheflow')
 ```
 
-Motivation
-----------
+## Motivation
 
-Often an R script is re-run with only some of the parts modified. With **`cacheflow`**, the function changes and the argument changes are all automatically detected and only the necessary re-evaluations are done. If there is no change in the function definition or in its arguments, it does not make sense to load and pass the cached **value** -- it is sufficient to pass downstream only the **informaion** that the value is the same without extracting the value itself. This kind of automatic [lazy re-evaluation](https://en.wikipedia.org/wiki/Lazy_evaluation) is particularly useful if there are long, chained, and complicated workflows. In such workflows, it is cumbersome and risky to track manually which functions/inputs/arguments have changed and which parts of the script should be re-evaluated. It's easier to trigger the re-run of the whole script and let the computer do the to comparison with the cached results to the previous runs to avoid the unnecessary and costly re-evaluations.
+Often an R script is re-run with only some of the parts modified. With
+**`cacheflow`**, the function changes and the argument changes are all
+automatically detected and only the necessary re-evaluations are done.
+If there is no change in the function definition or in its arguments, it
+does not make sense to load and pass the cached **value** – it is
+sufficient to pass downstream only the **informaion** that the value is
+the same without extracting the value itself. This kind of automatic
+[lazy re-evaluation](https://en.wikipedia.org/wiki/Lazy_evaluation) is
+particularly useful if there are long, chained, and complicated
+workflows. In such workflows, it is cumbersome and risky to track
+manually which functions/inputs/arguments have changed and which parts
+of the script should be re-evaluated. It’s easier to trigger the re-run
+of the whole script and let the computer do the to comparison with the
+cached results to the previous runs to avoid the unnecessary and costly
+re-evaluations.
 
 #### Goal: re-run your whole R scripts efficiently, only with necessary re-evaluations
 
-Automatic caching =&gt; no need for manual selections and re-runs of code chunks =&gt; saving human time and machine time. And lower error risk.
+Automatic caching =&gt; no need for manual selections and re-runs of
+code chunks =&gt; saving human time and machine time. And lower error
+risk.
 
 #### Inspiration: [remake](https://github.com/richfitz/remake)
 
-But **`cacheflow`** is simpler -- pure R script/code, no need for external non-R files such as [YAML](https://github.com/richfitz/remake#example), no cognitive switching cost. With its functional syntax, R seems to be a much better workflow description language. Your R code/script is your workflow!
+But **`cacheflow`** is simpler – pure R script/code, no need for
+external non-R files such as
+[YAML](https://github.com/richfitz/remake#example), no cognitive
+switching cost. With its functional syntax, R seems to be a much better
+workflow description language. Your R code/script is your workflow!
 
-Theory
-------
+## Theory
 
-Assuming that your workflow consists of many functions, most of which are
+Assuming that your workflow consists of many functions, most of which
+are
 
--   [pure](https://en.wikipedia.org/wiki/Pure_function) (the same arguments always return the the same values, with no side effects)
+-   [pure](https://en.wikipedia.org/wiki/Pure_function) (the same
+    arguments always return the the same values, with no side effects)
 -   time-consuming to re-evaluate
 
 it makes sense to re-evaluate only if
@@ -71,37 +93,63 @@ it makes sense to re-evaluate only if
 -   the function itself is modified
 -   at least one of the arguments is modified
 
-Features
---------
+## Features
 
-**`cacheflow`** is simple -- it caches the necessary information on disk, in the working directory, so it:
+**`cacheflow`** is simple – it caches the necessary information on disk,
+in the working directory, so it:
 
--   offers **persistent** cache: unlike simple [memoisation](https://en.wikipedia.org/wiki/Memoization), caching still works when R is closed and re-opened, eliminating the need to inefficiently always save and load the whole workspace in an .Rdata file). This is also safer. If your .Rdata file gets damaged, the whole workflow cache is lost. **`cacheflow`** caches single return values in separate .Rds files, thus reducing the risk.
--   should also work with multiple R instances e.g. when the R core package **[parallel](https://cran.r-project.org/web/packages/parallel/index.html)** is used (see the demo below) as long as the concurrent R instances can access the same working directory (which implies running them on one computer or using a shared network drive with the same paths mapped if running on multiple computers).
--   allows you to see your **workflow as a diagram**, with the re-evaluated functions highlighted.
+-   offers **persistent** cache: unlike simple
+    [memoisation](https://en.wikipedia.org/wiki/Memoization), caching
+    still works when R is closed and re-opened, eliminating the need to
+    inefficiently always save and load the whole workspace in an .Rdata
+    file). This is also safer. If your .Rdata file gets damaged, the
+    whole workflow cache is lost. **`cacheflow`** caches single return
+    values in separate .Rds files, thus reducing the risk.
+-   should also work with multiple R instances e.g. when the R core
+    package
+    **[parallel](https://cran.r-project.org/web/packages/parallel/index.html)**
+    is used (see the demo below) as long as the concurrent R instances
+    can access the same working directory (which implies running them on
+    one computer or using a shared network drive with the same paths
+    mapped if running on multiple computers).
+-   allows you to see your **workflow as a diagram**, with the
+    re-evaluated functions highlighted.
 
-API
----
+## API
 
 Functions:
 
 -   for one-off usage: **`initCache`**, **`removeCache`**,
--   for keeping the cache size under control: **`removeOldCache`**, **`keepCacheFor`**
--   core functions: **`cachedCall`**, **`cachedCallConcur`** "workhorses" and **`extractVal`**
--   convenience wrappers of `cachedCall` and `cachedCallConcur`: **`do`** and **`do_`**
--   a wrapper function for whole workflow if a diagram of the cached function calls and their dependencies is to be generated: **`withGraph`**
--   a simple function to be used only if package [parallel](https://cran.r-project.org/web/packages/parallel/index.html) is used inside withGraph: **`makeGraphAware`**
+-   for keeping the cache size under control: **`removeOldCache`**,
+    **`keepCacheFor`**
+-   core functions: **`cachedCall`**, **`cachedCallConcur`**
+    “workhorses” and **`extractVal`**
+-   convenience wrappers of `cachedCall` and `cachedCallConcur`:
+    **`do`** and **`do_`**
+-   a wrapper function for whole workflow if a diagram of the cached
+    function calls and their dependencies is to be generated:
+    **`withGraph`**
+-   a simple function to be used only if package
+    [parallel](https://cran.r-project.org/web/packages/parallel/index.html)
+    is used inside withGraph: **`makeGraphAware`**
 
-Dependencies
-------------
+## Dependencies
 
--   [digest](https://cran.r-project.org/web/packages/digest/index.html)::[digest](http://www.rdocumentation.org/packages/digest/functions/digest) -- efficiently hashes R objects and files
--   [DiagrammeR](https://cran.r-project.org/web/packages/DiagrammeR/index.html)::[grViz](http://www.rdocumentation.org/packages/DiagrammeR/functions/grViz) -- plots diagrams from [GraphViz dot code](https://en.wikipedia.org/wiki/DOT_%28graph_description_language%29)
--   [memoise](https://cran.r-project.org/web/packages/memoise/index.html)::[memoise](http://www.rdocumentation.org/packages/memoise/functions/memoise) -- for the in-session memoisation to avoid re-loads of .Rds files, when cached values need to be re-extracted from the saved .Rds files at some point. Not strictly needed but further increasing efficiency (at the cost of more RAM usage) if the .Rds files are large.
--   [codetools](https://cran.r-project.org/web/packages/codetools/index.html)::[findGlobals](http://www.rdocumentation.org/packages/codetools/functions/findGlobals) -- used for passing the values to concurrent R instances (in `cachedCallConcur`).
+-   [digest](https://cran.r-project.org/web/packages/digest/index.html)::[digest](http://www.rdocumentation.org/packages/digest/functions/digest)
+    – efficiently hashes R objects and files
+-   [DiagrammeR](https://cran.r-project.org/web/packages/DiagrammeR/index.html)::[grViz](http://www.rdocumentation.org/packages/DiagrammeR/functions/grViz)
+    – plots diagrams from [GraphViz dot
+    code](https://en.wikipedia.org/wiki/DOT_%28graph_description_language%29)
+-   [memoise](https://cran.r-project.org/web/packages/memoise/index.html)::[memoise](http://www.rdocumentation.org/packages/memoise/functions/memoise)
+    – for the in-session memoisation to avoid re-loads of .Rds files,
+    when cached values need to be re-extracted from the saved .Rds files
+    at some point. Not strictly needed but further increasing efficiency
+    (at the cost of more RAM usage) if the .Rds files are large.
+-   [codetools](https://cran.r-project.org/web/packages/codetools/index.html)::[findGlobals](http://www.rdocumentation.org/packages/codetools/functions/findGlobals)
+    – used for passing the values to concurrent R instances (in
+    `cachedCallConcur`).
 
-Demo
-----
+## Demo
 
 ``` r
 # Always remember to set your working directory
@@ -116,8 +164,9 @@ library(cacheflow)
 initCache()
 ```
 
-    ## "\\ci1homes11/homes095/rutkoal/R files/cacheflow-gh/.cache.db" has been created.
-    ## "\\ci1homes11/homes095/rutkoal/R files/cacheflow-gh/.cache.gv" has been created.
+    ## "E:/cacheflow/.cache.db" has been created.
+
+    ## "E:/cacheflow/.cache.gv" has been created.
 
 ``` r
 # Let's pretend we have 3 complicated pure functions
@@ -141,15 +190,20 @@ system.time(Res1 <- 1:100 %>%
                 extractVal)
 ```
 
-    ## 2016-10-27 13:28:25 [f1] (re-)evaluating...
-    ## 2016-10-27 13:28:26 [f1] saving to cache...
-    ## 2016-10-27 13:28:26 [f2] (re-)evaluating...
-    ## 2016-10-27 13:28:27 [f2] saving to cache...
-    ## 2016-10-27 13:28:27 [f3] (re-)evaluating...
-    ## 2016-10-27 13:28:28 [f3] saving to cache...
+    ## 2021-08-24 12:19:51 [f1] (re-)evaluating...
+
+    ## 2021-08-24 12:19:51 [f1] saving to cache...
+
+    ## 2021-08-24 12:19:52 [f2] (re-)evaluating...
+
+    ## 2021-08-24 12:19:52 [f2] saving to cache...
+
+    ## 2021-08-24 12:19:53 [f3] (re-)evaluating...
+
+    ## 2021-08-24 12:19:53 [f3] saving to cache...
 
     ##    user  system elapsed 
-    ##    0.00    0.02    3.23
+    ##    0.02    0.00    3.10
 
 ``` r
 system.time(Res2 <- 1:100 %>%
@@ -159,12 +213,14 @@ system.time(Res2 <- 1:100 %>%
                 extractVal)
 ```
 
-    ## 2016-10-27 13:28:28 [f1] no re-evaluation needed.
-    ## 2016-10-27 13:28:28 [f2] no re-evaluation needed.
-    ## 2016-10-27 13:28:28 [f3] no re-evaluation needed.
+    ## 2021-08-24 12:19:54 [f1] no re-evaluation needed.
+
+    ## 2021-08-24 12:19:54 [f2] no re-evaluation needed.
+
+    ## 2021-08-24 12:19:54 [f3] no re-evaluation needed.
 
     ##    user  system elapsed 
-    ##    0.01    0.03    0.13
+    ##    0.03    0.00    0.03
 
 ``` r
 # The same workflow but without the pipe operator and not timed
@@ -176,9 +232,11 @@ system.time(Res2 <- 1:100 %>%
 }
 ```
 
-    ## 2016-10-27 13:28:28 [f1] no re-evaluation needed.
-    ## 2016-10-27 13:28:28 [f2] no re-evaluation needed.
-    ## 2016-10-27 13:28:28 [f3] no re-evaluation needed.
+    ## 2021-08-24 12:19:54 [f1] no re-evaluation needed.
+
+    ## 2021-08-24 12:19:54 [f2] no re-evaluation needed.
+
+    ## 2021-08-24 12:19:54 [f3] no re-evaluation needed.
 
 ``` r
 Res1 == Res2
@@ -203,13 +261,16 @@ system.time(1:100 %>%
                 extractVal)
 ```
 
-    ## 2016-10-27 13:28:28 [f1] no re-evaluation needed.
-    ## 2016-10-27 13:28:28 [f2] no re-evaluation needed.
-    ## 2016-10-27 13:28:28 [f3] (re-)evaluating...
-    ## 2016-10-27 13:28:29 [f3] saving to cache...
+    ## 2021-08-24 12:19:54 [f1] no re-evaluation needed.
+
+    ## 2021-08-24 12:19:54 [f2] no re-evaluation needed.
+
+    ## 2021-08-24 12:19:54 [f3] (re-)evaluating...
+
+    ## 2021-08-24 12:19:54 [f3] saving to cache...
 
     ##    user  system elapsed 
-    ##    0.02    0.02    1.08
+    ##    0.00    0.00    1.04
 
 ``` r
 # Of course, a modification of a function also triggers re-evaluation
@@ -225,14 +286,18 @@ system.time(1:100 %>%
                 extractVal)
 ```
 
-    ## 2016-10-27 13:28:30 [f1] no re-evaluation needed.
-    ## 2016-10-27 13:28:30 [f2] (re-)evaluating...
-    ## 2016-10-27 13:28:31 [f2] saving to cache...
-    ## 2016-10-27 13:28:31 [f3] (re-)evaluating...
-    ## 2016-10-27 13:28:32 [f3] saving to cache...
+    ## 2021-08-24 12:19:55 [f1] no re-evaluation needed.
+
+    ## 2021-08-24 12:19:55 [f2] (re-)evaluating...
+
+    ## 2021-08-24 12:19:55 [f2] saving to cache...
+
+    ## 2021-08-24 12:19:56 [f3] (re-)evaluating...
+
+    ## 2021-08-24 12:19:56 [f3] saving to cache...
 
     ##    user  system elapsed 
-    ##    0.00    0.01    2.23
+    ##    0.00    0.02    2.07
 
 ``` r
 # Paths to files need to be wrapped in File()
@@ -252,11 +317,12 @@ system.time(ResA <-
                 extractVal)
 ```
 
-    ## 2016-10-27 13:28:32 [f4] (re-)evaluating...
-    ## 2016-10-27 13:28:33 [f4] saving to cache...
+    ## 2021-08-24 12:19:57 [f4] (re-)evaluating...
+
+    ## 2021-08-24 12:19:57 [f4] saving to cache...
 
     ##    user  system elapsed 
-    ##    0.03    0.01    1.13
+    ##    0.00    0.00    1.03
 
 ``` r
 tmpf2 <- tempfile()
@@ -271,10 +337,10 @@ system.time(ResB <-
                 extractVal)
 ```
 
-    ## 2016-10-27 13:28:33 [f4] no re-evaluation needed.
+    ## 2021-08-24 12:19:58 [f4] no re-evaluation needed.
 
     ##    user  system elapsed 
-    ##    0.00    0.00    0.08
+    ##       0       0       0
 
 ``` r
 identical(ResA, ResB)
@@ -290,11 +356,12 @@ system.time(cachedCall(f4, File(tmpf)) %>%
                 extractVal)
 ```
 
-    ## 2016-10-27 13:28:33 [f4] (re-)evaluating...
-    ## 2016-10-27 13:28:34 [f4] saving to cache...
+    ## 2021-08-24 12:19:58 [f4] (re-)evaluating...
+
+    ## 2021-08-24 12:19:58 [f4] saving to cache...
 
     ##    user  system elapsed 
-    ##    0.00    0.04    1.06
+    ##    0.00    0.01    1.03
 
 ### Concurrent (async) calls
 
@@ -323,13 +390,16 @@ system.time({
 })
 ```
 
-    ## 2016-10-27 13:28:34 [z1] (re-)evaluating concurrently...
-    ## 2016-10-27 13:28:35 [z2] (re-)evaluating concurrently...
-    ## 2016-10-27 13:28:35 [z3] (re-)evaluating...
-    ## 2016-10-27 13:28:41 [z3] saving to cache...
+    ## 2021-08-24 12:19:59 [z1] (re-)evaluating concurrently...
+
+    ## 2021-08-24 12:20:00 [z2] (re-)evaluating concurrently...
+
+    ## 2021-08-24 12:20:00 [z3] (re-)evaluating...
+
+    ## 2021-08-24 12:20:00 [z3] saving to cache...
 
     ##    user  system elapsed 
-    ##    0.41    0.37    6.82
+    ##    0.14    0.02    6.13
 
 ``` r
 # The waiting time is ca. 5s (plus the time needed for
@@ -343,27 +413,28 @@ system.time({
 do(mean, x=1:10) # is an equivalent of:
 ```
 
-    ## 2016-10-27 13:28:41 [mean] (re-)evaluating...
-    ## 2016-10-27 13:28:41 [mean] saving to cache...
+    ## 2021-08-24 12:20:06 [mean] (re-)evaluating...
+
+    ## 2021-08-24 12:20:06 [mean] saving to cache...
 
 ``` r
 .mean <- cachedCall(mean, x=1:10)
 ```
 
-    ## 2016-10-27 13:28:41 [mean] no re-evaluation needed.
+    ## 2021-08-24 12:20:06 [mean] no re-evaluation needed.
 
 ``` r
 do_(sum, 1:10) # is an equivalent of `cachedCallConcur` below:
 ```
 
-    ## 2016-10-27 13:28:41 [sum] (re-)evaluating concurrently...
+    ## 2021-08-24 12:20:06 [sum] (re-)evaluating concurrently...
 
 ``` r
 Sys.sleep(1) # just to make sure the concurrent call is completed
 .sum <- cachedCallConcur(sum, 1:10)
 ```
 
-    ## 2016-10-27 13:28:43 [sum] no re-evaluation needed.
+    ## 2021-08-24 12:20:07 [sum] no re-evaluation needed.
 
 ``` r
 # then use .mean or .sum as input arguments in the subsequent
@@ -371,14 +442,15 @@ Sys.sleep(1) # just to make sure the concurrent call is completed
 do(max, .mean, .sum) # which is an equivalent of:
 ```
 
-    ## 2016-10-27 13:28:43 [max] (re-)evaluating...
-    ## 2016-10-27 13:28:43 [max] saving to cache...
+    ## 2021-08-24 12:20:07 [max] (re-)evaluating...
+
+    ## 2021-08-24 12:20:07 [max] saving to cache...
 
 ``` r
 .max <- cachedCall(max, .mean, .sum)
 ```
 
-    ## 2016-10-27 13:28:43 [max] no re-evaluation needed.
+    ## 2021-08-24 12:20:07 [max] no re-evaluation needed.
 
 ### Drawing diagrams
 
@@ -392,14 +464,17 @@ withGraph(1:100 %>%
     plot
 ```
 
-    ## 2016-10-27 13:28:43 [f1] (re-)evaluating...
-    ## 2016-10-27 13:28:43 [f1] saving to cache...
-    ## 2016-10-27 13:28:43 [f2] (re-)evaluating...
-    ## 2016-10-27 13:28:44 [f2] saving to cache...
-    ## 2016-10-27 13:28:44 [f3] (re-)evaluating...
-    ## 2016-10-27 13:28:45 [f3] saving to cache...
+    ## 2021-08-24 12:20:07 [f1] (re-)evaluating...
 
-pre-main prep time: 16 ms
+    ## 2021-08-24 12:20:07 [f1] saving to cache...
+
+    ## 2021-08-24 12:20:07 [f2] (re-)evaluating...
+
+    ## 2021-08-24 12:20:07 [f2] saving to cache...
+
+    ## 2021-08-24 12:20:08 [f3] (re-)evaluating...
+
+    ## 2021-08-24 12:20:08 [f3] saving to cache...
 
 ![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test1.svg)
 
@@ -413,9 +488,15 @@ ResY <- withGraph({
 })
 ```
 
-    ## 2016-10-27 13:29:00 [f1] no re-evaluation needed.
-    ## 2016-10-27 13:29:00 [f2] no re-evaluation needed.
-    ## 2016-10-27 13:29:00 [f3] no re-evaluation needed.
+    ## 2021-08-24 12:20:10 [f1] no re-evaluation needed.
+
+    ## 2021-08-24 12:20:10 [f2] (re-)evaluating...
+
+    ## 2021-08-24 12:20:10 [f2] saving to cache...
+
+    ## 2021-08-24 12:20:11 [f3] (re-)evaluating...
+
+    ## 2021-08-24 12:20:11 [f3] saving to cache...
 
 ``` r
 ResY
@@ -424,8 +505,8 @@ ResY
     ## CachedWorkflow
     ## It can be drawn as a diagram with function `plot`.
     ## The returned value:
-    ## CachedResult
-    ## Its value can be extracted with function `extractVal`.
+
+    ## [1] 33.68667
 
 ``` r
 summary(ResY)
@@ -435,7 +516,7 @@ summary(ResY)
     ## CachedWorkflow made with `cachedCall`:
 
     ##    cached evaluated     total 
-    ##         3         0         3
+    ##         1         2         3
 
 ``` r
 extractVal(ResY)
@@ -448,8 +529,6 @@ extractVal(ResY)
 # there were no re-evaluations
 plot(ResY)
 ```
-
-pre-main prep time: 0 ms
 
 ![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test2.svg)
 
@@ -491,10 +570,13 @@ pRes <- withGraph({
 })
 ```
 
-    ## 2016-10-27 13:29:08 [-] (re-)evaluating...
-    ## 2016-10-27 13:29:08 [-] saving to cache...
-    ## 2016-10-27 13:29:08 [.Primitive("sum")] (re-)evaluating...
-    ## 2016-10-27 13:29:08 [.Primitive("sum")] saving to cache...
+    ## 2021-08-24 12:20:15 [-] (re-)evaluating...
+
+    ## 2021-08-24 12:20:15 [-] saving to cache...
+
+    ## 2021-08-24 12:20:15 [.Primitive("sum")] (re-)evaluating...
+
+    ## 2021-08-24 12:20:15 [.Primitive("sum")] saving to cache...
 
 ``` r
 stopCluster(cl)
@@ -520,8 +602,6 @@ summary(pRes)
 ``` r
 plot(pRes)
 ```
-
-pre-main prep time: 16 ms
 
 ![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test3.svg)
 
@@ -562,8 +642,9 @@ pRes <- withGraph({
 })
 ```
 
-    ## 2016-10-27 13:29:18 [-] no re-evaluation needed.
-    ## 2016-10-27 13:29:18 [.Primitive("sum")] no re-evaluation needed.
+    ## 2021-08-24 12:20:18 [-] no re-evaluation needed.
+
+    ## 2021-08-24 12:20:18 [.Primitive("sum")] no re-evaluation needed.
 
 ``` r
 stopCluster(cl)
@@ -573,6 +654,7 @@ pRes
     ## CachedWorkflow
     ## It can be drawn as a diagram with function `plot`.
     ## The returned value:
+
     ## CachedResult
     ## Its value can be extracted with function `extractVal`.
 
@@ -592,7 +674,5 @@ summary(pRes)
 # help(NumericConstants)
 plot(pRes)
 ```
-
-pre-main prep time: 16 ms
 
 ![](https://cdn.rawgit.com/alekrutkowski/cacheflow/master/test4.svg)

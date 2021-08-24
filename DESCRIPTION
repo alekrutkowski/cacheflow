@@ -1,7 +1,7 @@
 Package: cacheflow
 Type: Package
 Title: Simple cached workflow with diagram
-Version: 0.1.1.1
+Version: 0.2.0
 Author: Aleksander Rutkowski
 Maintainer: Aleksander Rutkowski <alek.rutkowski@gmail.com>
 Imports:
@@ -10,5 +10,6 @@ Imports:
     digest,
     DiagrammeR,
     memoise,
-    codetools
-RoxygenNote: 5.0.1
+    codetools,
+    qs
+RoxygenNote: 7.1.1

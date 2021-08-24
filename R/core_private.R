@@ -1,4 +1,5 @@
 #' @import magrittr
+#' @importFrom qs qsave qread
 NULL
 
 CCall <-
@@ -27,7 +28,7 @@ CCall <-
         filename <-
             paste0(..cachedir..,
                    Signat,
-                   '.Rds')
+                   '.Rqs')
         isCached <-
             file.exists(filename)
         ..gvfname.. <-
@@ -65,7 +66,7 @@ CCall <-
                                 do.call(..fun..,
                                         lapply(., extractVal)) %>%
                                     message_(brackets(FUN),' saving to cache...') %>%
-                                    saveRDS_(filename))} %>%
+                                    qsave_(filename))} %>%
                  list(signat=Signat,
                       val=.) %>%
                  addClass('CachedResult'))
@@ -74,7 +75,7 @@ CCall <-
 futureImports <- function()
     list(extractVal=extractVal,
          containsVal=containsVal,
-         readRDSmem=readRDS,
+         qreadMem=qreadMem,
          cacheDir=cacheDir,
          path=path,
          ifFutureExtractFuture=ifFutureExtractFuture,
@@ -193,8 +194,8 @@ path <- function(dir)
     paste0('/',dir) %>%
     {suppressWarnings(normalizePath(.,'/'))}
 
-readRDSmem <- memoise::memoise(function(x)
-    x %>% readRDS)
+qreadMem <- memoise::memoise(function(x)
+    x %>% qread)
 
 saveGVcodeModule <-
     function(FUN,
@@ -236,11 +237,11 @@ saveGVcodeModule <-
     cat(file=paste0(..gvfname..,Signat),
         sep='\n')
 
-saveRDS_ <- function(object, file, ...) { # pipe friendly
+qsave_ <- function(object, file, ...) { # pipe friendly
     if (!file.exists(file)) # to avoid collision if another R instance running
         # in parallel received in the meantime the same arguments and is now
         # caching the same result
-        saveRDS(object, file, ...)
+        qsave(object, file, ...)
     object
 }
 
